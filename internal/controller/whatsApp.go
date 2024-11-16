@@ -1,0 +1,54 @@
+package controller
+
+import (
+	"context"
+	"fmt"
+	"sync"
+
+	"github.com/inter-hubly/linker/internal/service"
+	"github.com/inter-hubly/pilot/broker"
+	"github.com/inter-hubly/pilot/hlog"
+	"github.com/streadway/amqp"
+)
+
+var (
+	whatsAppOnce sync.Once
+	whatsApp     *whatsAppController
+)
+
+func NewWhatsApp() {
+	whatsAppOnce.Do(func() {
+		whatsApp = &whatsAppController{
+			rabbit: broker.GetConnection(),
+		}
+		whatsApp.SendMessage()
+		whatsApp.ReceiveMessage()
+	})
+}
+
+type WhatsApp interface {
+	SendMessage()
+	ReceiveMessage()
+}
+
+type whatsAppController struct {
+	exchange        string
+	rabbit          broker.Connection
+	whatsAppService service.WhatsApp
+}
+
+func (w *whatsAppController) SendMessage() {
+	w.rabbit.Consume("whatsapp.send", func(value amqp.Delivery) {
+		ctx := context.Background()
+		hlog.Debug("whatsAppController.SendMessage", fmt.Sprintf("%s", value.Body))
+		w.whatsAppService.SendMessage(ctx, value.Body)
+	})
+}
+
+func (w *whatsAppController) ReceiveMessage() {
+	w.rabbit.Consume("whatsapp.receive", func(value amqp.Delivery) {
+		ctx := context.Background()
+		hlog.Debug("whatsAppController.ReceiveMessage", fmt.Sprintf("%s", value.Body))
+		w.whatsAppService.ReceiveMessage(ctx, value.Body)
+	})
+}

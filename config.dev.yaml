@@ -1,0 +1,10 @@
+config:
+  env: development
+  port: 8080
+  hostname: http://shortify
+pgsql:
+  host: postgres://postgres:x@localhost:5432/shortify
+  entryPoint: ./init.sql
+redis:
+  host: localhost:6379
+  database: 0
