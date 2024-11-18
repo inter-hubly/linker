@@ -2,7 +2,11 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
+
+	"github.com/inter-hubly/linker/internal/domain/dto"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestWhatsApp(t *testing.T) {
@@ -18,33 +22,31 @@ func TestWhatsApp(t *testing.T) {
 	} {
 		t.Run(v.testName, func(t *testing.T) {
 			ctx := context.Background()
-			service.SendMessage(ctx, []byte(jsonData))
+			var entityWhats dto.WhatsAppJSONReceived
+			err := json.Unmarshal([]byte(jsonReceived), &entityWhats)
+			assert.Nil(t, err)
+
+			err = service.SendMessage(ctx, &entityWhats)
+			assert.Nil(t, err)
 		})
 	}
 }
 
-var jsonData = `
+var jsonReceived = `
 {
 	"id": "510006955530686",
-	"changes": [
-		{
-			"field": "messages",
-			"value": {
-				"messaging_product": "whatsapp",
-				"metadata": {
-					"display_phone_number": "15551817023",
-					"phone_number_id": "515719138282305"
-				},
-				"statuses": [
-					{
-						"id": "wamid.HBgMNTU0ODkxNzg0NTg2FQIAERgSOTQyQjZBNEEwRjg3N0VGRURDAA==",
-						"recipient_id": "554891784586",
-						"status": "read",
-						"timestamp": 1731695647
-					}
-				]
-			}
-		}
-	]
-}
-`
+	"sender": {
+			"phoneNumberId": "515719138282305",
+			"displayPhoneNumber": "15551817023"
+	},
+	"receive": {
+			"phoneNumberId": "510006955530686",
+			"displayPhoneNumber": "554891784586"
+	},
+	"metadata": {
+			"messageId": "wamid.HBgMNTU0ODkxNzg0NTg2FQIAERgSOTQyQjZBNEEwRjg3N0VGRURDAA==",
+			"recipientId": "554891784586",
+			"status": "read",
+			"timestamp": 1731695647
+	}
+}`

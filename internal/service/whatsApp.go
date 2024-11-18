@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/inter-hubly/linker/internal/domain"
+	"github.com/inter-hubly/linker/internal/domain/dto"
 	"github.com/inter-hubly/linker/internal/mediator"
 	"github.com/inter-hubly/pilot/hlog"
 )
 
 type WhatsApp interface {
-	SendMessage(ctx context.Context, message *domain.WhatsApp) error
-	ReceiveMessage(ctx context.Context, message *domain.WhatsApp) error
+	SendMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error
+	ReceiveMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error
 }
 
 var (
@@ -33,13 +33,12 @@ func NewWhatsApp() *whatsAppService {
 	return whatsApp
 }
 
-func (w *whatsAppService) SendMessage(ctx context.Context, message *domain.WhatsApp) error {
-	hlog.Debug("whatsAppService.SendMessage", fmt.Sprintf("%s", body))
-	w.whatsappMediator.Persist()
-	return nil
+func (w *whatsAppService) SendMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error {
+	hlog.Debug("whatsAppService.SendMessage", fmt.Sprintf("%v", message))
+	return w.whatsappMediator.Persist(ctx, message)
 }
 
-func (w *whatsAppService) ReceiveMessage(ctx context.Context, message *domain.WhatsApp) error {
-	hlog.Debug("whatsAppService.ReceiveMessage", fmt.Sprintf("%s", body))
+func (w *whatsAppService) ReceiveMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error {
+	hlog.Debug("whatsAppService.ReceiveMessage", fmt.Sprintf("%v", message))
 	return nil
 }

@@ -6,7 +6,9 @@ pgsql:
   host: postgres://postgres:x@localhost:5432/shortify
   entryPoint: ./init.sql
 elasticSearch:
-  host: http://localhost:9020
+  host: http://localhost:9200
+  password: test
+  user: test
 redis:
   host: localhost:6379
   database: 0
