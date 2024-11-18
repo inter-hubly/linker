@@ -47,6 +47,7 @@ var jsonReceived = `
 			"messageId": "wamid.HBgMNTU0ODkxNzg0NTg2FQIAERgSOTQyQjZBNEEwRjg3N0VGRURDAA==",
 			"recipientId": "554891784586",
 			"status": "read",
+			"body": "",
 			"timestamp": 1731695647
 	}
 }`

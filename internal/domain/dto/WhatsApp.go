@@ -16,5 +16,7 @@ type WhatsAppMetadataDto struct {
 	MessageID   string `json:"messageId"`
 	RecipientID string `json:"recipientId"`
 	Status      string `json:"status"`
+	Body        string `json:"body"`
 	Timestamp   int64  `json:"timestamp"`
+	BodyLength  int64  `json:"bodyLength"`
 }

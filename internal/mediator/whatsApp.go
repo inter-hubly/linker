@@ -20,7 +20,10 @@ type whatsAppMediator struct {
 }
 
 func NewWhatsApp() WhatsApp {
-	return &whatsAppMediator{}
+	return &whatsAppMediator{
+		whatsAppRepository: repository.NewWhatsApp(),
+		whatsAppGateway:    gateway.NewWhatsApp(),
+	}
 
 }
 
@@ -43,31 +46,27 @@ func (w *whatsAppMediator) Persist(ctx context.Context, message *dto.WhatsAppJSO
 }
 
 func (w *whatsAppMediator) persistMessageInElastic(ctx context.Context, message *dto.WhatsAppJSONReceived, chanError chan *errValue) {
-	func() {
-		err := w.whatsAppRepository.PersistMessage(ctx, message)
-		if err != nil {
-			hlog.Error("whatsAppMediator.persistMessageInElastic", "error when persist message", err)
-			chanError <- &errValue{
-				errType: PersistError,
-				err:     err,
-			}
+	err := w.whatsAppRepository.PersistMessage(ctx, message)
+	if err != nil {
+		hlog.Error("whatsAppMediator.persistMessageInElastic", "error when persist message", err)
+		chanError <- &errValue{
+			errType: PersistError,
+			err:     err,
 		}
-		chanError <- nil
-	}()
+	}
+	chanError <- nil
 }
 
 func (w *whatsAppMediator) sendMessageToWhatsApp(ctx context.Context, message *dto.WhatsAppJSONReceived, chanError chan *errValue) {
-	func() {
-		err := w.whatsAppGateway.SendMessage(ctx, message)
-		if err != nil {
-			hlog.Error("whatsAppMediator.sendMessageToWhatsApp", "error when send message", err)
-			chanError <- &errValue{
-				errType: SendError,
-				err:     err,
-			}
+	err := w.whatsAppGateway.SendMessage(ctx, message)
+	if err != nil {
+		hlog.Error("whatsAppMediator.sendMessageToWhatsApp", "error when send message", err)
+		chanError <- &errValue{
+			errType: SendError,
+			err:     err,
 		}
-		chanError <- nil
-	}()
+	}
+	chanError <- nil
 }
 
 const (

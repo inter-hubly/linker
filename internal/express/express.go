@@ -2,13 +2,21 @@ package express
 
 import (
 	"github.com/inter-hubly/linker/internal/controller"
-	"github.com/inter-hubly/linker/internal/service"
 	rabbitmq "github.com/inter-hubly/pilot/broker"
+	"github.com/inter-hubly/pilot/database/elasticsearch"
+	"github.com/inter-hubly/pilot/server"
 )
 
 func Start() {
 	rabbitmq.NewRabbitMQ("linker", "topic")
 
-	service.NewWhatsApp()
+	elasticsearch.NewConn(
+		elasticsearch.WithUrl([]string{server.GetElasticSearch().Host}),
+		elasticsearch.WithUsernameAndPassword(
+			server.GetElasticSearch().Username,
+			server.GetElasticSearch().Password,
+		),
+	)
+
 	controller.NewWhatsApp()
 }

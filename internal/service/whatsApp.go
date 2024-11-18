@@ -40,5 +40,5 @@ func (w *whatsAppService) SendMessage(ctx context.Context, message *dto.WhatsApp
 
 func (w *whatsAppService) ReceiveMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error {
 	hlog.Debug("whatsAppService.ReceiveMessage", fmt.Sprintf("%v", message))
-	return nil
+	return w.whatsappMediator.Persist(ctx, message)
 }
