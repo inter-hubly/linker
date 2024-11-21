@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/inter-hubly/linker/internal/domain/dto"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
+	"github.com/inter-hubly/pilot/domain/dto"
 	"github.com/inter-hubly/pilot/server"
 	"github.com/inter-hubly/pilot/testutils"
 	"github.com/stretchr/testify/assert"

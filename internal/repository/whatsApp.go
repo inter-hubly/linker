@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/inter-hubly/linker/internal/domain/dto"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
+	"github.com/inter-hubly/pilot/domain/dto"
 )
 
 type WhatsApp interface {

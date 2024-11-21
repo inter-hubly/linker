@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/inter-hubly/linker/internal/domain/dto"
 	"github.com/inter-hubly/linker/internal/mediator"
+	"github.com/inter-hubly/pilot/domain/dto"
 	"github.com/inter-hubly/pilot/hlog"
 )
 

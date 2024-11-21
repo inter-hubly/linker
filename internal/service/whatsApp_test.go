@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/inter-hubly/linker/internal/domain/dto"
+	"github.com/inter-hubly/pilot/domain/dto"
 	"github.com/stretchr/testify/assert"
 )
 

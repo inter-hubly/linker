@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/inter-hubly/linker/internal/domain/dto"
 	"sync"
 
 	"github.com/inter-hubly/linker/internal/service"
 	"github.com/inter-hubly/pilot/broker"
+	"github.com/inter-hubly/pilot/domain/dto"
 	"github.com/inter-hubly/pilot/hlog"
 	"github.com/streadway/amqp"
 )

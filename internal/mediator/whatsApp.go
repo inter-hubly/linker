@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/inter-hubly/linker/internal/domain/dto"
 	"github.com/inter-hubly/linker/internal/gateway"
 	"github.com/inter-hubly/linker/internal/repository"
+	"github.com/inter-hubly/pilot/domain/dto"
 	"github.com/inter-hubly/pilot/hlog"
 )
 
