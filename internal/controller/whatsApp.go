@@ -24,13 +24,13 @@ func NewWhatsApp() {
 			rabbit:          broker.GetConnection(),
 			whatsAppService: service.NewWhatsApp(),
 		}
-		whatsApp.SendMessage()
+		whatsApp.SentMessage()
 		whatsApp.ReceiveMessage()
 	})
 }
 
 type WhatsApp interface {
-	SendMessage()
+	SentMessage()
 	ReceiveMessage()
 }
 
@@ -40,29 +40,33 @@ type whatsAppController struct {
 	whatsAppService service.WhatsApp
 }
 
-func (w *whatsAppController) SendMessage() {
-	w.rabbit.Consume("whatsapp.send", func(value amqp.Delivery) {
+func (w *whatsAppController) SentMessage() {
+	w.rabbit.Consume("whatsapp.sent", func(value amqp.Delivery) {
 		ctx := context.Background()
-		hlog.Debug("whatsAppController.SendMessage", fmt.Sprintf("%s", value.Body))
-		var receivedDto dto.WhatsAppJSONReceived
-		if err := json.Unmarshal(value.Body, &receivedDto); err != nil {
-			hlog.Error("whatsAppController.SendMessage", fmt.Sprintf("err parsing: %s", err))
-			return
+		receivedDto, err := parseJsonReceived(ctx, value.Body)
+		if err != nil {
+			hlog.Error("whatsAppController.ReceiveMessage", fmt.Sprintf("err parsing: %s", err))
 		}
-		w.whatsAppService.SendMessage(ctx, &receivedDto)
+		w.whatsAppService.SendMessage(ctx, receivedDto)
 	})
 }
 
 func (w *whatsAppController) ReceiveMessage() {
 	w.rabbit.Consume("whatsapp.receive", func(value amqp.Delivery) {
 		ctx := context.Background()
-		hlog.Debug("whatsAppController.ReceiveMessage", fmt.Sprintf("%s", value.Body))
-		var receivedDto dto.WhatsAppJSONReceived
-		if err := json.Unmarshal(value.Body, &receivedDto); err != nil {
+		receivedDto, err := parseJsonReceived(ctx, value.Body)
+		if err != nil {
 			hlog.Error("whatsAppController.ReceiveMessage", fmt.Sprintf("err parsing: %s", err))
-			return
 		}
-
-		w.whatsAppService.ReceiveMessage(ctx, &receivedDto)
+		w.whatsAppService.ReceiveMessage(ctx, receivedDto)
 	})
+}
+
+func parseJsonReceived(_ context.Context, body []byte) (*dto.WhatsAppJSONReceived, error) {
+	hlog.Debug("whatsAppController.parseJsonReceived", fmt.Sprintf("%s", body))
+	var receivedDto dto.WhatsAppJSONReceived
+	if err := json.Unmarshal(body, &receivedDto); err != nil {
+		return nil, err
+	}
+	return &receivedDto, nil
 }

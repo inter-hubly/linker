@@ -54,20 +54,16 @@ func TestWhatsApp(t *testing.T) {
 
 func NewWhatsAppMessage() *dto.WhatsAppJSONReceived {
 	return &dto.WhatsAppJSONReceived{
-		ID: "123456",
-		Sender: dto.WhatsAppPhoneIdDto{
+		Id: "123456",
+		Owner: dto.WhatsAppPhoneIdDto{
 			PhoneNumberID:      "515719138282305",
 			DisplayPhoneNumber: "15551817023",
 		},
-		Receive: dto.WhatsAppPhoneIdDto{
-			PhoneNumberID:      "510006955530686",
-			DisplayPhoneNumber: "554891784586",
-		},
-		Metadata: dto.WhatsAppMetadataDto{
-			MessageID:   "wamid.HBgMNTU0ODkxNzg0NTg2FQIAERgSOTQyQjZBNEEwRjg3N0VGRURDAA==",
-			RecipientID: "554891784586",
-			Status:      "read",
-			Timestamp:   1731695647,
+		Metadata: dto.WhatsAppStatusesDto{
+			MessageId:      "wamid.HBgMNTU0ODkxNzg0NTg2FQIAERgSOTQyQjZBNEEwRjg3N0VGRURDAA==",
+			ConversationId: "read",
+			Timestamp:      "1731695647",
+			Body:           "ok",
 		},
 	}
 }
