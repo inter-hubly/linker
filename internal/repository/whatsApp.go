@@ -2,14 +2,17 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
+	"github.com/inter-hubly/linker/internal/domain/entity"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
 	"github.com/inter-hubly/pilot/domain/dto"
 )
 
 type WhatsApp interface {
-	PersistMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error
+	PersistMessage(ctx context.Context, message *entity.Chat) (string, error)
+	SetStatusMessageById(ctx context.Context, messageId string, status dto.MessageStatus, messageType entity.ChatMessageTime) error
 }
 
 var (
@@ -31,8 +34,44 @@ func NewWhatsApp() *whatsAppRepository {
 	return whatsApp
 }
 
-func (w *whatsAppRepository) PersistMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error {
-	_, err := w.elastic.Create(ctx, elasticIndex, message)
+func (w *whatsAppRepository) PersistMessage(ctx context.Context, message *entity.Chat) (string, error) {
+	res, err := w.elastic.Create(ctx, elasticIndex, message)
+	if err != nil {
+		return "", err
+	}
+	return res.ID, nil
+}
+
+func (w *whatsAppRepository) SetStatusMessageById(
+	ctx context.Context,
+	messageId string,
+	status dto.MessageStatus,
+	chatTime entity.ChatMessageTime,
+) error {
+
+	query := map[string]interface{}{
+		"script": map[string]interface{}{
+			"source": fmt.Sprintf("ctx._source.%s = params.%s;", status, status),
+			"params": map[string]interface{}{
+				string(status): map[string]interface{}{
+					"CreatedInDatabase": chatTime.CreatedInDatabase,
+					"ReceivedAt":        chatTime.ReceivedAt,
+				},
+			},
+		},
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{
+				"must": []map[string]interface{}{
+					{
+						"match": map[string]interface{}{
+							"messageId": messageId,
+						},
+					},
+				},
+			},
+		},
+	}
+	_, err := w.elastic.Update(ctx, elasticIndex, query)
 	if err != nil {
 		return err
 	}

@@ -10,4 +10,5 @@ func main() {
 	server.FillConfigEnvironment()
 
 	express.Start()
+	select {}
 }

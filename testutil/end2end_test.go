@@ -1,12 +1,13 @@
 package testutil
 
 import (
-	"github.com/inter-hubly/linker/internal/express"
-	rabbitmq "github.com/inter-hubly/pilot/broker"
-	"github.com/inter-hubly/pilot/server"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/inter-hubly/linker/internal/express"
+	rabbitmq "github.com/inter-hubly/pilot/broker"
+	"github.com/inter-hubly/pilot/server"
 )
 
 const withTestContainer = false
@@ -21,7 +22,13 @@ func TestEnd2End(t *testing.T) {
 	}
 
 	time.Sleep(5 * time.Second)
-	rabbitmq.GetConnection().Publish("whatsapp.sent", []byte(jsonReceived))
+	for key, value := range jsonReceived {
+		if key == "whatsapp.sent" {
+			for _, json := range value {
+				rabbitmq.GetConnection().Publish(key, []byte(json))
+			}
+		}
+	}
 	time.Sleep(5 * time.Second)
 	wg.Done()
 }
@@ -31,9 +38,10 @@ func prepareTestEnvironment() {
 	express.Start()
 }
 
-var jsonReceived = `{
+var jsonReceived = map[string][]string{
+	"whatsapp.delivered": {`{
   "id": "510006955530686",
-  "messageType": "message",
+  "messageType": "statuses",
   "owner": {
     "phoneNumberId": "515719138282305",
     "displayPhoneNumber": "15551817023"
@@ -41,9 +49,43 @@ var jsonReceived = `{
   "senderPhone": "554891784586",
   "status": "delivered",
   "metadata": {
-    "timestamp": "1732229980",
-    "messageId": "wamid.HBgMNTU0ODkxNzg0NTg2FQIAEhgWM0VCMEQxMTAyODM3RUM2RjM0OTlEOQA=",
-    "body": "Olá! Sua mensagem teste foi recebida com sucesso!",
-    "bodyLength": 50
+    "timestamp": "1732229947",
+    "conversationId": "7afc5c0fbaf6f5777c7be1b40b13c243",
+    "messageId": "wamid.HBgMNTU0ODkxNzg0NTg2FQIAERgSRDk2MDc1RjU4OUYwRTgxNzdDAA=="
   }
-}`
+}`,
+	},
+	"whatsapp.read": {
+		`{
+  "id": "510006955530686",
+  "messageType": "statuses",
+  "owner": {
+    "phoneNumberId": "515719138282305",
+    "displayPhoneNumber": "15551817023"
+  },
+  "senderPhone": "554891784586",
+  "status": "read",
+  "metadata": {
+    "timestamp": "1732229971",
+    "messageId": "wamid.HBgMNTU0ODkxNzg0NTg2FQIAERgSRDk2MDc1RjU4OUYwRTgxNzdDAA=="
+  }
+}`,
+	},
+	"whatsapp.sent": {
+		`{
+  "id": "510006955530686",
+  "messageType": "statuses",
+  "owner": {
+    "phoneNumberId": "515719138282305",
+    "displayPhoneNumber": "15551817023"
+  },
+  "senderPhone": "+5548991784586",
+  "status": "sent",
+  "metadata": {
+    "timestamp": "1732229947",
+    "conversationId": "7afc5c0fbaf6f5777c7be1b40b13c243",
+    "messageId": "wamid.HBgMNTU0ODkxNzg0NTg2FQIAERgSRDk2MDc1RjU4OUYwRTgxNzdDAA==",
+	"body":"isso é uma mensagem teste"
+  }
+}`},
+}

@@ -4,7 +4,9 @@ import (
 	"context"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/inter-hubly/linker/internal/domain/entity"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
 	"github.com/inter-hubly/pilot/domain/dto"
 	"github.com/inter-hubly/pilot/server"
@@ -45,9 +47,32 @@ func TestWhatsApp(t *testing.T) {
 		},
 	} {
 		t.Run(v.testName, func(t *testing.T) {
+			message := NewWhatsAppMessage()
 
-			err := repository.PersistMessage(ctx, NewWhatsAppMessage())
+			id, err := repository.PersistMessage(ctx, entity.NormalizeWhatsAppMessage(message))
 			assert.Nil(t, err)
+
+			chatMessageTime := entity.ChatMessageTime{
+				CreatedInDatabase: time.Now(),
+				ReceivedAt:        message.Metadata.Timestamp,
+			}
+
+			repository.SetStatusMessageById(ctx, message.Metadata.MessageId, dto.ReadStatus, chatMessageTime)
+
+			chat, err := repository.elastic.FindById(ctx, "whatsapp.ready", id)
+
+			chatMessage := chat.Source["read"].(map[string]interface{})
+
+			assert.Nil(t, err)
+			assert.NotNil(t, chat)
+			assert.Equal(t, chat.ID, id)
+			parsedTime, err := time.Parse(time.RFC3339Nano, chatMessage["CreatedInDatabase"].(string))
+			if err != nil {
+				return
+			}
+			assert.True(t, chatMessageTime.CreatedInDatabase.Equal(parsedTime))
+			assert.Equal(t, chatMessageTime.ReceivedAt, chatMessage["ReceivedAt"])
+
 		})
 	}
 }
@@ -59,7 +84,8 @@ func NewWhatsAppMessage() *dto.WhatsAppJSONReceived {
 			PhoneNumberID:      "515719138282305",
 			DisplayPhoneNumber: "15551817023",
 		},
-		Metadata: dto.WhatsAppStatusesDto{
+		Status: dto.DeliveredStatus,
+		Metadata: dto.WhatsAppMetadataDto{
 			MessageId:      "wamid.HBgMNTU0ODkxNzg0NTg2FQIAERgSOTQyQjZBNEEwRjg3N0VGRURDAA==",
 			ConversationId: "read",
 			Timestamp:      "1731695647",

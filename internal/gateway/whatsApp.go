@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"sync"
 
+	dto2 "github.com/inter-hubly/linker/internal/domain/dto"
 	"github.com/inter-hubly/pilot/domain/dto"
 	"github.com/inter-hubly/pilot/hlog"
 )
@@ -21,9 +22,10 @@ type WhatsApp interface {
 }
 
 var (
-	whatsAppOnce  sync.Once
-	whatsApp      *whatsAppGateway
-	graphAPIToken = "EAAP8VwxXKXkBOxlPsd6IZAtkIengZA5zDz1jZBeicRSvdCev600UTKX9KSSLAusf63NZATFl2DgFBhojFlyNjjjWTZAWPilw28icjc0QoAAeAgsKLMYLxZBe8FKNrObdoygNt5OuGGozqIi5JkB2ZBd6SmnJmdbcA9hLTpMkwG2NjjOFXAjLwKKtlFhj38EJSLcSRg6WNDOa7jx32pZCxBDwKiFd"
+	whatsAppOnce   sync.Once
+	whatsApp       *whatsAppGateway
+	graphAPIToken  = "EAAP8VwxXKXkBO9gQBYWkLswZCFJk8ZCiFAjTOTBXJyU3HnjZA6mZAnHchT1PEtvmByg2ID4PrnoZBtVUjGv8o7aaqEIxpInrIOMMdDctGMKIS4BBhhZC9w02lztHNwSMEBYroJJgqRhj8eaSP6NVcCpuKQGcKxpyU6xWqmvpeQ6PqZBHiGq9NyxHuD67fVpTUsrdWk8WbeouVUI7lRDlM6emWFQ7wZDZD"
+	messageProduct = "whatsapp"
 )
 
 type whatsAppGateway struct {
@@ -41,7 +43,24 @@ func NewWhatsApp() *whatsAppGateway {
 
 func (w *whatsAppGateway) SendMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error {
 	hlog.Debug("whatsAppGateway.SendMessage", fmt.Sprintf("Send Message %v", message))
-
+	messageDto := dto2.GatewayWhatsAppMessageDto{
+		MessagingProduct: messageProduct,
+		RecipientType:    "individual",
+		To:               message.SenderPhone,
+		Type:             "text",
+		Text: dto2.WhatsAppTextDto{
+			PreviewUrl: true,
+			Body:       message.Metadata.Body,
+		},
+	}
+	if err := w.makeRequest(
+		http.MethodPost,
+		fmt.Sprintf("%s%s/messages", w.url, message.Owner.PhoneNumberID),
+		messageDto,
+	); err != nil {
+		hlog.Error("whatsAppGateway.SendMessage", fmt.Sprintf("Failed to send message %v", message))
+		return err
+	}
 	return nil
 }
 
@@ -62,7 +81,7 @@ func (w *whatsAppGateway) ReadyMessage(ctx context.Context, phoneNumberId, messa
 	return w.makeRequest(http.MethodPost, fmt.Sprintf("%s%s/messages", w.url, phoneNumberId), data)
 }
 
-func (w *whatsAppGateway) makeRequest(method, url string, data map[string]interface{}) error {
+func (w *whatsAppGateway) makeRequest(method, url string, data any) error {
 	body, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("failed to marshal request body: %w", err)

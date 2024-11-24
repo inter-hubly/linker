@@ -24,14 +24,19 @@ func NewWhatsApp() {
 			rabbit:          broker.GetConnection(),
 			whatsAppService: service.NewWhatsApp(),
 		}
+
+		whatsApp.DeliveredMessage()
 		whatsApp.SentMessage()
-		whatsApp.ReceiveMessage()
+		whatsApp.ReceivedMessage()
+		whatsApp.ReadMessage()
 	})
 }
 
 type WhatsApp interface {
 	SentMessage()
-	ReceiveMessage()
+	ReceivedMessage()
+	ReadMessage()
+	DeliveredMessage()
 }
 
 type whatsAppController struct {
@@ -45,20 +50,42 @@ func (w *whatsAppController) SentMessage() {
 		ctx := context.Background()
 		receivedDto, err := parseJsonReceived(ctx, value.Body)
 		if err != nil {
-			hlog.Error("whatsAppController.ReceiveMessage", fmt.Sprintf("err parsing: %s", err))
+			hlog.Error("whatsAppController.SentMessage", fmt.Sprintf("err parsing: %s", err))
 		}
-		w.whatsAppService.SendMessage(ctx, receivedDto)
+		w.whatsAppService.SentMessage(ctx, receivedDto)
 	})
 }
 
-func (w *whatsAppController) ReceiveMessage() {
-	w.rabbit.Consume("whatsapp.receive", func(value amqp.Delivery) {
+func (w *whatsAppController) DeliveredMessage() {
+	w.rabbit.Consume("whatsapp.delivered", func(value amqp.Delivery) {
 		ctx := context.Background()
 		receivedDto, err := parseJsonReceived(ctx, value.Body)
 		if err != nil {
-			hlog.Error("whatsAppController.ReceiveMessage", fmt.Sprintf("err parsing: %s", err))
+			hlog.Error("whatsAppController.DeliveredMessage", fmt.Sprintf("err parsing: %s", err))
 		}
-		w.whatsAppService.ReceiveMessage(ctx, receivedDto)
+		w.whatsAppService.DeliveredMessage(ctx, receivedDto)
+	})
+}
+
+func (w *whatsAppController) ReceivedMessage() {
+	w.rabbit.Consume("whatsapp.received", func(value amqp.Delivery) {
+		ctx := context.Background()
+		receivedDto, err := parseJsonReceived(ctx, value.Body)
+		if err != nil {
+			hlog.Error("whatsAppController.ReceivedMessage", fmt.Sprintf("err parsing: %s", err))
+		}
+		w.whatsAppService.SetMessageStatus(ctx, receivedDto)
+	})
+}
+
+func (w *whatsAppController) ReadMessage() {
+	w.rabbit.Consume("whatsapp.read", func(value amqp.Delivery) {
+		ctx := context.Background()
+		receivedDto, err := parseJsonReceived(ctx, value.Body)
+		if err != nil {
+			hlog.Error("whatsAppController.ReadMessage", fmt.Sprintf("err parsing: %s", err))
+		}
+		w.whatsAppService.SetMessageStatus(ctx, receivedDto)
 	})
 }
 

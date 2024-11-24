@@ -11,8 +11,9 @@ import (
 )
 
 type WhatsApp interface {
-	SendMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error
-	ReceiveMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error
+	SentMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error
+	DeliveredMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error
+	SetMessageStatus(ctx context.Context, message *dto.WhatsAppJSONReceived) error
 }
 
 var (
@@ -33,12 +34,17 @@ func NewWhatsApp() *whatsAppService {
 	return whatsApp
 }
 
-func (w *whatsAppService) SendMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error {
-	hlog.Debug("whatsAppService.SendMessage", fmt.Sprintf("%v", message))
-	return w.whatsappMediator.Persist(ctx, message)
+func (w *whatsAppService) SentMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error {
+	hlog.Debug("whatsAppService.SentMessage", fmt.Sprintf("%v", message))
+	return w.whatsappMediator.SentMessage(ctx, message)
 }
 
-func (w *whatsAppService) ReceiveMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error {
+func (w *whatsAppService) DeliveredMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error {
+	hlog.Debug("whatsAppService.DeliveredMessage", fmt.Sprintf("%v", message))
+	return w.whatsappMediator.DeliveredMessage(ctx, message)
+}
+
+func (w *whatsAppService) SetMessageStatus(ctx context.Context, message *dto.WhatsAppJSONReceived) error {
 	hlog.Debug("whatsAppService.ReceiveMessage", fmt.Sprintf("%v", message))
-	return w.whatsappMediator.Persist(ctx, message)
+	return w.whatsappMediator.SetStatus(ctx, message)
 }
