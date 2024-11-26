@@ -63,11 +63,12 @@ func (w *whatsAppController) StartTemplate() {
 func (w *whatsAppController) SentMessage() {
 	w.rabbit.Consume("whatsapp.sent", func(value amqp.Delivery) {
 		ctx := context.Background()
-		receivedDto, err := parseJsonReceived(ctx, value.Body)
-		if err != nil {
+		var sentText dto.SentTextDto
+		if err := json.Unmarshal(value.Body, &sentText); err != nil {
 			hlog.Error("whatsAppController.SentMessage", fmt.Sprintf("err parsing: %s", err))
+			return
 		}
-		w.whatsAppService.SentMessage(ctx, receivedDto)
+		w.whatsAppService.SentMessage(ctx, &sentText)
 	})
 }
 

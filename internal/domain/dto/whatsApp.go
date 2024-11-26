@@ -22,9 +22,9 @@ type WhatsAppTextDto struct {
 }
 
 type StartTemplateDto struct {
-	To       string `json:"to"`
-	Name     string `json:"name"`
-	Language string `json:"language"`
+	SenderAndReceiver SenderAndReceiverDto `json:"senderAndReceiver"`
+	Name              string               `json:"name"`
+	Language          string               `json:"language"`
 }
 
 type TemplateDto struct {
@@ -40,6 +40,12 @@ type Message struct {
 	MessageStatus string `json:"message_status"`
 }
 
+type SentTextDto struct {
+	SenderAndReceiver SenderAndReceiverDto `json:"senderAndReceiver"`
+	Name              string               `json:"name"`
+	Language          string               `json:"language"`
+}
+
 type ResponseWhatsAppGateway struct {
 	MessagingProduct string    `json:"messaging_product"`
 	Contact          []Contact `json:"contact"`
@@ -49,4 +55,9 @@ type ResponseWhatsAppGateway struct {
 type Contact struct {
 	Input string `json:"input"`
 	WaId  string `json:"wa_id"`
+}
+
+type SenderAndReceiverDto struct {
+	From string `json:"from"`
+	To   string `json:"to"`
 }

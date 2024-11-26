@@ -12,7 +12,7 @@ import (
 )
 
 type WhatsApp interface {
-	SentMessage(ctx context.Context, message *entity.WhatsAppJSONReceived) error
+	SentMessage(ctx context.Context, message *dto.SentTextDto) error
 	DeliveredMessage(ctx context.Context, message *entity.WhatsAppJSONReceived) error
 	SetMessageStatus(ctx context.Context, message *entity.WhatsAppJSONReceived) error
 	StartTemplate(ctx context.Context, template *dto.StartTemplateDto) error
@@ -41,9 +41,17 @@ func (w *whatsAppService) StartTemplate(ctx context.Context, template *dto.Start
 	return w.whatsappMediator.StartTemplate(ctx, template)
 }
 
-func (w *whatsAppService) SentMessage(ctx context.Context, message *entity.WhatsAppJSONReceived) error {
-	hlog.Debug("whatsAppService.SentMessage", fmt.Sprintf("%v", message))
-	return w.whatsappMediator.SentMessage(ctx, message)
+func (w *whatsAppService) SentMessage(ctx context.Context, template *dto.SentTextDto) error {
+	hlog.Debug("whatsAppService.SentMessage", fmt.Sprintf("%v", template))
+	message := entity.WhatsAppJSONReceived{
+		Owner: entity.WhatsAppPhoneIdDto{
+			PhoneNumberID:      "",
+			DisplayPhoneNumber: template.SenderAndReceiver.From,
+		},
+		SenderPhone: template.SenderAndReceiver.To,
+	}
+
+	return w.whatsappMediator.SentMessage(ctx, &message)
 }
 
 func (w *whatsAppService) DeliveredMessage(ctx context.Context, message *entity.WhatsAppJSONReceived) error {
