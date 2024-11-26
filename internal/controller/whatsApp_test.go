@@ -2,9 +2,10 @@ package controller
 
 import (
 	"context"
-	"github.com/inter-hubly/pilot/domain/dto"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/inter-hubly/pilot/domain/entity"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestWhatsAppController(t *testing.T) {
@@ -25,7 +26,7 @@ func TestWhatsAppController(t *testing.T) {
 			assert.Equal(t, received.Id, "510006955530686")
 			assert.Equal(t, received.Owner.PhoneNumberID, "515719138282305")
 			assert.Equal(t, received.Owner.DisplayPhoneNumber, "15551817023")
-			assert.Equal(t, received.Status, dto.DeliveredStatus)
+			assert.Equal(t, received.Status, entity.DeliveredStatus)
 		})
 	}
 }

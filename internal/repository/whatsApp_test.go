@@ -8,7 +8,7 @@ import (
 
 	"github.com/inter-hubly/linker/internal/domain/entity"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
-	"github.com/inter-hubly/pilot/domain/dto"
+	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/server"
 	"github.com/inter-hubly/pilot/testutils"
 	"github.com/stretchr/testify/assert"
@@ -57,7 +57,7 @@ func TestWhatsApp(t *testing.T) {
 				ReceivedAt:        message.Metadata.Timestamp,
 			}
 
-			repository.SetStatusMessageById(ctx, message.Metadata.MessageId, dto.ReadStatus, chatMessageTime)
+			repository.SetStatusMessageById(ctx, message.Metadata.MessageId, entity.ReadStatus, chatMessageTime)
 
 			chat, err := repository.elastic.FindById(ctx, "whatsapp.ready", id)
 
@@ -77,15 +77,15 @@ func TestWhatsApp(t *testing.T) {
 	}
 }
 
-func NewWhatsAppMessage() *dto.WhatsAppJSONReceived {
-	return &dto.WhatsAppJSONReceived{
+func NewWhatsAppMessage() *entity.WhatsAppJSONReceived {
+	return &entity.WhatsAppJSONReceived{
 		Id: "123456",
-		Owner: dto.WhatsAppPhoneIdDto{
+		Owner: entity.WhatsAppPhoneIdDto{
 			PhoneNumberID:      "515719138282305",
 			DisplayPhoneNumber: "15551817023",
 		},
-		Status: dto.DeliveredStatus,
-		Metadata: dto.WhatsAppMetadataDto{
+		Status: entity.DeliveredStatus,
+		Metadata: entity.WhatsAppMetadataDto{
 			MessageId:      "wamid.HBgMNTU0ODkxNzg0NTg2FQIAERgSOTQyQjZBNEEwRjg3N0VGRURDAA==",
 			ConversationId: "read",
 			Timestamp:      "1731695647",

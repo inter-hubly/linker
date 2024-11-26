@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/inter-hubly/linker/internal/domain/dto"
 	"github.com/inter-hubly/linker/internal/service"
 	"github.com/inter-hubly/pilot/broker"
-	"github.com/inter-hubly/pilot/domain/dto"
+	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/hlog"
 	"github.com/streadway/amqp"
 )
@@ -25,6 +26,7 @@ func NewWhatsApp() {
 			whatsAppService: service.NewWhatsApp(),
 		}
 
+		whatsApp.StartTemplate()
 		whatsApp.DeliveredMessage()
 		whatsApp.SentMessage()
 		whatsApp.ReceivedMessage()
@@ -33,6 +35,7 @@ func NewWhatsApp() {
 }
 
 type WhatsApp interface {
+	StartTemplate()
 	SentMessage()
 	ReceivedMessage()
 	ReadMessage()
@@ -43,6 +46,18 @@ type whatsAppController struct {
 	exchange        string
 	rabbit          broker.Connection
 	whatsAppService service.WhatsApp
+}
+
+func (w *whatsAppController) StartTemplate() {
+	w.rabbit.Consume("whatsapp.StartTemplate", func(value amqp.Delivery) {
+		ctx := context.Background()
+		var startTemplate dto.StartTemplateDto
+		if err := json.Unmarshal(value.Body, &startTemplate); err != nil {
+			hlog.Error("whatsAppController.StartTemplate", fmt.Sprintf("err parsing: %s", err))
+			return
+		}
+		w.whatsAppService.StartTemplate(ctx, &startTemplate)
+	})
 }
 
 func (w *whatsAppController) SentMessage() {
@@ -89,9 +104,9 @@ func (w *whatsAppController) ReadMessage() {
 	})
 }
 
-func parseJsonReceived(_ context.Context, body []byte) (*dto.WhatsAppJSONReceived, error) {
+func parseJsonReceived(_ context.Context, body []byte) (*entity.WhatsAppJSONReceived, error) {
 	hlog.Debug("whatsAppController.parseJsonReceived", fmt.Sprintf("%s", body))
-	var receivedDto dto.WhatsAppJSONReceived
+	var receivedDto entity.WhatsAppJSONReceived
 	if err := json.Unmarshal(body, &receivedDto); err != nil {
 		return nil, err
 	}

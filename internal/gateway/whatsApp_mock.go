@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	dto "github.com/inter-hubly/pilot/domain/dto"
+	dto "github.com/inter-hubly/pilot/domain/entity"
 )
 
 // MockWhatsApp is a mock of WhatsApp interface.
