@@ -49,7 +49,7 @@ type whatsAppController struct {
 }
 
 func (w *whatsAppController) StartTemplate() {
-	w.rabbit.Consume("whatsapp.StartTemplate", func(value amqp.Delivery) {
+	w.rabbit.Consume("whatsapp.start", func(value amqp.Delivery) {
 		ctx := context.Background()
 		var startTemplate dto.StartTemplateDto
 		if err := json.Unmarshal(value.Body, &startTemplate); err != nil {

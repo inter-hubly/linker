@@ -3,12 +3,12 @@ package mediator
 import (
 	"context"
 	"errors"
-
 	"github.com/inter-hubly/linker/internal/domain/dto"
 	"github.com/inter-hubly/linker/internal/gateway"
 	"github.com/inter-hubly/linker/internal/repository"
 	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/hlog"
+	"time"
 )
 
 type WhatsApp interface {
@@ -34,6 +34,7 @@ func NewWhatsApp() WhatsApp {
 }
 
 func (w *whatsAppMediator) StartTemplate(ctx context.Context, template *dto.StartTemplateDto) error {
+	ownerId := "515719138282305"
 	message := dto.GatewayWhatsAppMessageDto{
 		MessagingProduct: w.messageProduct,
 		To:               template.SenderAndReceiver.To,
@@ -45,24 +46,23 @@ func (w *whatsAppMediator) StartTemplate(ctx context.Context, template *dto.Star
 			},
 		},
 	}
-	res, err := w.whatsAppGateway.SendMessage(ctx, template.SenderAndReceiver.From, &message)
+	res, err := w.whatsAppGateway.SendMessage(ctx, ownerId, &message)
 	if err != nil {
 		hlog.Error("whatsAppMediator.StartTemplate", "error when send message to whatsApp", err)
 		return err
 	}
 
-	// Id        string          `json:"id"`
-	// MessageId string          `json:"messageId"`
-	// Type      ChatType        `json:"type"`
-	// Received  ChatMessageTime `json:"received,omitempty"`
-	// Read      ChatMessageTime `json:"read,omitempty"`
-	// Delivered ChatMessageTime `json:"delivered,omitempty"`
-	// Message   ReceivedMessage `json:"message,omitempty"`
-
-	entity := entity.Chat{
+	chatDb := entity.Chat{
 		MessageId: res.Messages[0].Id,
+		OwnerId:   ownerId,
+		From:      template.SenderAndReceiver.From,
+		To:        template.SenderAndReceiver.To,
 	}
-	w.whatsAppRepository.PersistMessage(ctx, &entity)
+	chatDb.Audit = append(chatDb.Audit, entity.ChatMessageStatusTime{
+		Status:     entity.DeliveredStatus,
+		ReceivedAt: time.Now().String(),
+	})
+	w.whatsAppRepository.PersistMessage(ctx, &chatDb)
 
 	return nil
 }
@@ -128,7 +128,7 @@ func (w *whatsAppMediator) persistMessageInElastic(ctx context.Context, message 
 }
 
 func (w *whatsAppMediator) sendMessageToWhatsApp(ctx context.Context, message *dto.GatewayWhatsAppMessageDto, chanError chan *errValue) {
-	_, err := w.whatsAppGateway.SendMessage(ctx, "message", message)
+	_, err := w.whatsAppGateway.SendMessage(ctx, "515719138282305", message)
 	if err != nil {
 		hlog.Error("whatsAppMediator.sendMessageToWhatsApp", "error when send message", err)
 		chanError <- &errValue{
@@ -154,6 +154,7 @@ func (w *whatsAppMediator) createTextMessage(ctx context.Context, to, body strin
 		MessagingProduct: w.messageProduct,
 		To:               to,
 		Type:             dto.TextMessageType,
+		RecipientType:    "individual",
 		Text: &dto.WhatsAppTextDto{
 			PreviewUrl: false,
 			Body:       body,

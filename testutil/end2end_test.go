@@ -22,18 +22,11 @@ func TestEnd2End(t *testing.T) {
 	}
 
 	time.Sleep(5 * time.Second)
-	// for key, value := range jsonReceived {
-	// 	if key == "whatsapp.sent" {
-	// 		for _, json := range value {
-	// 			rabbitmq.GetConnection().Publish(key, SentMessage())
-	// 		}
-	// 	}
-	// }
-	message, err := SentMessage()
+	message, err := StartMessage()
 	if err != nil {
 		t.Fatal(err)
 	}
-	rabbitmq.GetConnection().Publish("whatsapp.sent", message)
+	rabbitmq.GetConnection().Publish("whatsapp.start", message)
 	wg.Wait()
 	// time.Sleep(5 * time.Second)
 	// wg.Done()

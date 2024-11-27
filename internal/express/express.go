@@ -15,6 +15,7 @@ func Start() {
 
 	if err := rabbitmq.GetConnection().
 		QueueBind(
+			rabbitmq.NewQueueBinding("whatsapp.start", "whatsapp.start", ExchangeBroker),
 			rabbitmq.NewQueueBinding("whatsapp.read", "whatsapp.read", ExchangeBroker),
 			rabbitmq.NewQueueBinding("whatsapp.sent", "whatsapp.sent", ExchangeBroker),
 			rabbitmq.NewQueueBinding("whatsapp.delivered", "whatsapp.delivered", ExchangeBroker),

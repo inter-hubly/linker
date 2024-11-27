@@ -23,10 +23,26 @@ func GetMessageTest() *entity.WhatsAppJSONReceived {
 func SentMessage() ([]byte, error) {
 	res := dto.SentTextDto{
 		SenderAndReceiver: dto.SenderAndReceiverDto{
-			To:   "+5548991784586",
+			To:   "5548991784586",
 			From: "15551817023",
 		},
 		Message: "Messagem de teste",
+	}
+	marshal, err := json.Marshal(res)
+	if err != nil {
+		return nil, err
+	}
+	return marshal, nil
+}
+
+func StartMessage() ([]byte, error) {
+	res := dto.StartTemplateDto{
+		SenderAndReceiver: dto.SenderAndReceiverDto{
+			To:   "+5548991784586",
+			From: "15551817023",
+		},
+		Name:     "hello_world",
+		Language: "en_US",
 	}
 	marshal, err := json.Marshal(res)
 	if err != nil {
