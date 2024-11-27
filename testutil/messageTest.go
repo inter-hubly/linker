@@ -1,6 +1,11 @@
 package testutil
 
-import "github.com/inter-hubly/pilot/domain/entity"
+import (
+	"encoding/json"
+
+	"github.com/inter-hubly/linker/internal/domain/dto"
+	"github.com/inter-hubly/pilot/domain/entity"
+)
 
 func GetMessageTest() *entity.WhatsAppJSONReceived {
 	return &entity.WhatsAppJSONReceived{
@@ -13,4 +18,19 @@ func GetMessageTest() *entity.WhatsAppJSONReceived {
 			Body: "Mensagem teste do aplicativo",
 		},
 	}
+}
+
+func SentMessage() ([]byte, error) {
+	res := dto.SentTextDto{
+		SenderAndReceiver: dto.SenderAndReceiverDto{
+			To:   "+5548991784586",
+			From: "15551817023",
+		},
+		Message: "Messagem de teste",
+	}
+	marshal, err := json.Marshal(res)
+	if err != nil {
+		return nil, err
+	}
+	return marshal, nil
 }

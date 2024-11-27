@@ -53,8 +53,7 @@ func (w *whatsAppRepository) SetStatusMessageById(
 			"source": fmt.Sprintf("ctx._source.%s = params.%s;", status, status),
 			"params": map[string]interface{}{
 				string(status): map[string]interface{}{
-					"CreatedInDatabase": chatTime.CreatedInDatabase,
-					"ReceivedAt":        chatTime.ReceivedAt,
+					"ReceivedAt": chatTime.ReceivedAt,
 				},
 			},
 		},

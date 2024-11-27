@@ -42,8 +42,7 @@ type Message struct {
 
 type SentTextDto struct {
 	SenderAndReceiver SenderAndReceiverDto `json:"senderAndReceiver"`
-	Name              string               `json:"name"`
-	Language          string               `json:"language"`
+	Message           string               `json:"message"`
 }
 
 type ResponseWhatsAppGateway struct {

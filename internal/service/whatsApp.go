@@ -45,10 +45,13 @@ func (w *whatsAppService) SentMessage(ctx context.Context, template *dto.SentTex
 	hlog.Debug("whatsAppService.SentMessage", fmt.Sprintf("%v", template))
 	message := entity.WhatsAppJSONReceived{
 		Owner: entity.WhatsAppPhoneIdDto{
-			PhoneNumberID:      "",
+			PhoneNumberID:      "515719138282305",
 			DisplayPhoneNumber: template.SenderAndReceiver.From,
 		},
 		SenderPhone: template.SenderAndReceiver.To,
+		Metadata: entity.WhatsAppMetadataDto{
+			Body: template.Message,
+		},
 	}
 
 	return w.whatsappMediator.SentMessage(ctx, &message)

@@ -3,7 +3,6 @@ package mediator
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/inter-hubly/linker/internal/domain/dto"
 	"github.com/inter-hubly/linker/internal/gateway"
@@ -109,8 +108,8 @@ func (w *whatsAppMediator) DeliveredMessage(ctx context.Context, message *entity
 
 func (w *whatsAppMediator) SetStatus(ctx context.Context, message *entity.WhatsAppJSONReceived) error {
 	w.whatsAppRepository.SetStatusMessageById(ctx, message.Metadata.MessageId, message.Status, entity.ChatMessageTime{
-		CreatedInDatabase: time.Now(),
-		ReceivedAt:        message.Metadata.Timestamp,
+		Status:     "send",
+		ReceivedAt: message.Metadata.Timestamp,
 	})
 	return nil
 }
