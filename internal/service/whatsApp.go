@@ -7,6 +7,7 @@ import (
 
 	"github.com/inter-hubly/linker/internal/domain/dto"
 	"github.com/inter-hubly/linker/internal/mediator"
+	"github.com/inter-hubly/linker/internal/repository"
 	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/hlog"
 )
@@ -24,13 +25,15 @@ var (
 )
 
 type whatsAppService struct {
-	whatsappMediator mediator.WhatsApp
+	whatsappMediator   mediator.WhatsApp
+	whatsappRepository repository.WhatsApp
 }
 
 func NewWhatsApp() *whatsAppService {
 	whatsAppOnce.Do(func() {
 		whatsApp = &whatsAppService{
-			whatsappMediator: mediator.NewWhatsApp(),
+			whatsappMediator:   mediator.NewWhatsApp(),
+			whatsappRepository: repository.NewWhatsApp(),
 		}
 	})
 	return whatsApp
@@ -59,6 +62,7 @@ func (w *whatsAppService) SentMessage(ctx context.Context, template *dto.SentTex
 
 func (w *whatsAppService) DeliveredMessage(ctx context.Context, message *entity.WhatsAppJSONReceived) error {
 	hlog.Debug("whatsAppService.DeliveredMessage", fmt.Sprintf("%v", message))
+
 	return w.whatsappMediator.DeliveredMessage(ctx, message)
 }
 

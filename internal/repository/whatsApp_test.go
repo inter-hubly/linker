@@ -2,11 +2,12 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/inter-hubly/linker/internal/domain/entity"
+	"github.com/inter-hubly/linker/testutil"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
 	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/server"
@@ -41,55 +42,50 @@ func TestWhatsApp(t *testing.T) {
 	repository := NewWhatsApp()
 	for _, v := range []struct {
 		testName string
+		auxFunc  func() (string, error)
 	}{
 		{
 			testName: "have to persist",
+			auxFunc: func() (string, error) {
+				chatToSave := testutil.GetChatToSave(testutil.NewWhatsAppMessage())
+
+				chatToSave.Audit = append(chatToSave.Audit, entity.ChatMessageStatusTime{
+					Status:     entity.DeliveredStatus,
+					ReceivedAt: fmt.Sprintf("%d", time.Now().Unix()),
+				})
+				return repository.PersistMessage(ctx, chatToSave)
+			},
+		},
+		{
+			testName: "Need change status",
+			auxFunc: func() (string, error) {
+				chatToSave := testutil.GetChatToSave(testutil.NewWhatsAppMessage())
+
+				chatToSave.Audit = append(chatToSave.Audit, entity.ChatMessageStatusTime{
+					Status:     entity.DeliveredStatus,
+					ReceivedAt: fmt.Sprintf("%d", time.Now().Unix()),
+				})
+
+				chatId, err := repository.PersistMessage(ctx, chatToSave)
+				assert.Nil(t, err)
+				assert.NotEmpty(t, chatId)
+
+				err = repository.SetStatusMessageById(ctx, chatToSave.MessageId, entity.ReceivedStatus)
+				assert.Nil(t, err)
+
+				resp, err := repository.elastic.FindById(ctx, "whatsapp.ready", chatId)
+				assert.Nil(t, err)
+				statusResp := resp.Source["status"].([]interface{})
+				assert.Equal(t, len(statusResp), 2)
+				return chatId, nil
+			},
 		},
 	} {
 		t.Run(v.testName, func(t *testing.T) {
-			message := NewWhatsAppMessage()
 
-			id, err := repository.PersistMessage(ctx, entity.NormalizeWhatsAppMessage(message))
+			id, err := v.auxFunc()
 			assert.Nil(t, err)
-
-			chatMessageTime := entity.ChatMessageTime{
-				CreatedInDatabase: time.Now(),
-				ReceivedAt:        message.Metadata.Timestamp,
-			}
-
-			repository.SetStatusMessageById(ctx, message.Metadata.MessageId, entity.ReadStatus, chatMessageTime)
-
-			chat, err := repository.elastic.FindById(ctx, "whatsapp.ready", id)
-
-			chatMessage := chat.Source["read"].(map[string]interface{})
-
-			assert.Nil(t, err)
-			assert.NotNil(t, chat)
-			assert.Equal(t, chat.ID, id)
-			parsedTime, err := time.Parse(time.RFC3339Nano, chatMessage["CreatedInDatabase"].(string))
-			if err != nil {
-				return
-			}
-			assert.True(t, chatMessageTime.CreatedInDatabase.Equal(parsedTime))
-			assert.Equal(t, chatMessageTime.ReceivedAt, chatMessage["ReceivedAt"])
-
+			assert.NotEmpty(t, id)
 		})
-	}
-}
-
-func NewWhatsAppMessage() *entity.WhatsAppJSONReceived {
-	return &entity.WhatsAppJSONReceived{
-		Id: "123456",
-		Owner: entity.WhatsAppPhoneIdDto{
-			PhoneNumberID:      "515719138282305",
-			DisplayPhoneNumber: "15551817023",
-		},
-		Status: entity.DeliveredStatus,
-		Metadata: entity.WhatsAppMetadataDto{
-			MessageId:      "wamid.HBgMNTU0ODkxNzg0NTg2FQIAERgSOTQyQjZBNEEwRjg3N0VGRURDAA==",
-			ConversationId: "read",
-			Timestamp:      "1731695647",
-			Body:           "ok",
-		},
 	}
 }

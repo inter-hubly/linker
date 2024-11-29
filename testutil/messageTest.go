@@ -50,3 +50,33 @@ func StartMessage() ([]byte, error) {
 	}
 	return marshal, nil
 }
+
+func GetChatToSave(e *entity.WhatsAppJSONReceived) *entity.Chat {
+	return &entity.Chat{
+		MessageId: e.Metadata.MessageId,
+		OwnerId:   e.Owner.PhoneNumberID,
+		From:      e.Owner.DisplayPhoneNumber,
+		To:        e.SenderPhone,
+		Message:   "",
+	}
+}
+
+func NewWhatsAppMessage() *entity.WhatsAppJSONReceived {
+	return &entity.WhatsAppJSONReceived{
+		Id:     "123456",
+		Active: true,
+		Owner: entity.WhatsAppPhoneIdDto{
+			PhoneNumberID:      "515719138282305",
+			DisplayPhoneNumber: "15551817023",
+		},
+		Status:      entity.DeliveredStatus,
+		SenderPhone: "+5548991784586",
+		Metadata: entity.WhatsAppMetadataDto{
+			ExpirationTimeStamp: "1732814400",
+			MessageId:           "wamid.HBgMNTU0ODkxNzg0NTg2FQIAERgSRjJCRDQ0NTIzNkNEMTY5Q0JGAA==",
+			ConversationId:      "8496b7ae453f655b01ac1e5654713a1d",
+			Timestamp:           "1731695647",
+			OriginType:          entity.UtilityOriginType,
+		},
+	}
+}

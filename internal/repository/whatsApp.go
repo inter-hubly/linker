@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"sync"
+	"time"
 
 	"github.com/inter-hubly/pilot/database/elasticsearch"
 	"github.com/inter-hubly/pilot/domain/entity"
@@ -11,7 +11,7 @@ import (
 
 type WhatsApp interface {
 	PersistMessage(ctx context.Context, message *entity.Chat) (string, error)
-	SetStatusMessageById(ctx context.Context, messageId string, status entity.MessageStatus, messageType entity.ChatMessageTime) error
+	SetStatusMessageById(ctx context.Context, messageId string, status entity.MessageStatus) error
 }
 
 var (
@@ -45,15 +45,14 @@ func (w *whatsAppRepository) SetStatusMessageById(
 	ctx context.Context,
 	messageId string,
 	status entity.MessageStatus,
-	chatTime entity.ChatMessageTime,
 ) error {
-
 	query := map[string]interface{}{
 		"script": map[string]interface{}{
-			"source": fmt.Sprintf("ctx._source.%s = params.%s;", status, status),
+			"source": "ctx._source.status.add(params.new_status);",
 			"params": map[string]interface{}{
-				string(status): map[string]interface{}{
-					"ReceivedAt": chatTime.ReceivedAt,
+				"new_status": map[string]interface{}{
+					"status":     status,
+					"receivedAt": time.Now().Unix(),
 				},
 			},
 		},

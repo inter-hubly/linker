@@ -3,17 +3,17 @@ package mediator
 import (
 	"context"
 	"errors"
+	"time"
+
 	"github.com/inter-hubly/linker/internal/domain/dto"
 	"github.com/inter-hubly/linker/internal/gateway"
 	"github.com/inter-hubly/linker/internal/repository"
 	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/hlog"
-	"time"
 )
 
 type WhatsApp interface {
 	SentMessage(ctx context.Context, message *entity.WhatsAppJSONReceived) error
-	DeliveredMessage(ctx context.Context, message *entity.WhatsAppJSONReceived) error
 	SetStatus(ctx context.Context, message *entity.WhatsAppJSONReceived) error
 	StartTemplate(ctx context.Context, template *dto.StartTemplateDto) error
 }
@@ -87,27 +87,8 @@ func (w *whatsAppMediator) SentMessage(ctx context.Context, message *entity.What
 	return nil
 }
 
-func (w *whatsAppMediator) DeliveredMessage(ctx context.Context, message *entity.WhatsAppJSONReceived) error {
-	chanError := make(chan *errValue)
-
-	senderMessage := dto.GatewayWhatsAppMessageDto{}
-	go w.sendMessageToWhatsApp(ctx, &senderMessage, chanError)
-
-	go w.persistMessageInElastic(ctx, message, chanError)
-
-	for i := 0; i < 2; i++ {
-		err := <-chanError
-		if err != nil {
-			if err.errType == SendError {
-				return errors.New("error when sending mensage to whatsApp Gateway")
-			}
-		}
-	}
-	return nil
-}
-
 func (w *whatsAppMediator) SetStatus(ctx context.Context, message *entity.WhatsAppJSONReceived) error {
-	w.whatsAppRepository.SetStatusMessageById(ctx, message.Metadata.MessageId, message.Status, entity.ChatMessageTime{
+	w.whatsAppRepository.SetStatusMessageById(ctx, message.Metadata.MessageId, message.Status, entity.ChatMessageStatusTime{
 		Status:     "send",
 		ReceivedAt: message.Metadata.Timestamp,
 	})

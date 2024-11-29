@@ -26,7 +26,7 @@ func TestWhatsApp(t *testing.T) {
 			err := json.Unmarshal([]byte(jsonReceived), &entityWhats)
 			assert.Nil(t, err)
 
-			err = service.SendMessage(ctx, &entityWhats)
+			err = service.SetMessageStatus(ctx, &entityWhats)
 			assert.Nil(t, err)
 		})
 	}
