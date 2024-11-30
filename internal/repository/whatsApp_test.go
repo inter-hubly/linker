@@ -7,9 +7,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
+	entity2 "github.com/inter-hubly/linker/internal/domain/entity"
 	"github.com/inter-hubly/linker/testutil"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
-	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/server"
 	"github.com/inter-hubly/pilot/testutils"
 	"github.com/stretchr/testify/assert"
@@ -49,8 +50,8 @@ func TestWhatsApp(t *testing.T) {
 			auxFunc: func() (string, error) {
 				chatToSave := testutil.GetChatToSave(testutil.NewWhatsAppMessage())
 
-				chatToSave.Audit = append(chatToSave.Audit, entity.ChatMessageStatusTime{
-					Status:     entity.DeliveredStatus,
+				chatToSave.Audit = append(chatToSave.Audit, entity2.ChatMessageStatusTime{
+					Status:     dto.DeliveredStatus,
 					ReceivedAt: fmt.Sprintf("%d", time.Now().Unix()),
 				})
 				return repository.PersistMessage(ctx, chatToSave)
@@ -61,8 +62,8 @@ func TestWhatsApp(t *testing.T) {
 			auxFunc: func() (string, error) {
 				chatToSave := testutil.GetChatToSave(testutil.NewWhatsAppMessage())
 
-				chatToSave.Audit = append(chatToSave.Audit, entity.ChatMessageStatusTime{
-					Status:     entity.DeliveredStatus,
+				chatToSave.Audit = append(chatToSave.Audit, entity2.ChatMessageStatusTime{
+					Status:     dto.DeliveredStatus,
 					ReceivedAt: fmt.Sprintf("%d", time.Now().Unix()),
 				})
 
@@ -70,7 +71,7 @@ func TestWhatsApp(t *testing.T) {
 				assert.Nil(t, err)
 				assert.NotEmpty(t, chatId)
 
-				err = repository.SetStatusMessageById(ctx, chatToSave.MessageId, entity.ReceivedStatus)
+				err = repository.SetStatusMessageById(ctx, chatToSave.MessageId, dto.SentStatus)
 				assert.Nil(t, err)
 
 				resp, err := repository.elastic.FindById(ctx, "whatsapp.ready", chatId)

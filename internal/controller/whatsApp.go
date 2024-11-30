@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/inter-hubly/linker/internal/domain/dto"
+	dto "github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
 	"github.com/inter-hubly/linker/internal/service"
 	"github.com/inter-hubly/pilot/broker"
-	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/hlog"
 	"github.com/streadway/amqp"
 )
@@ -27,19 +26,17 @@ func NewWhatsApp() {
 		}
 
 		whatsApp.StartTemplate()
-		whatsApp.DeliveredMessage()
-		whatsApp.SentMessage()
-		whatsApp.ReceivedMessage()
-		whatsApp.ReadMessage()
+		whatsApp.SendMessage()
+		whatsApp.ChangeStatus()
+		whatsApp.ReceiveMessage()
 	})
 }
 
 type WhatsApp interface {
 	StartTemplate()
-	SentMessage()
-	ReceivedMessage()
-	ReadMessage()
-	DeliveredMessage()
+	SendMessage()
+	ChangeStatus()
+	ReceiveMessage()
 }
 
 type whatsAppController struct {
@@ -56,58 +53,62 @@ func (w *whatsAppController) StartTemplate() {
 			hlog.Error("whatsAppController.StartTemplate", fmt.Sprintf("err parsing: %s", err))
 			return
 		}
+		if startTemplate.Name == "" {
+			hlog.Error("whatsAppController.StartTemplate", "Name can't be empty")
+		}
 		w.whatsAppService.StartTemplate(ctx, &startTemplate)
 	})
 }
 
-func (w *whatsAppController) SentMessage() {
-	w.rabbit.Consume("whatsapp.sent", func(value amqp.Delivery) {
+// SendMessage is when user send message in app
+func (w *whatsAppController) SendMessage() {
+	w.rabbit.Consume("whatsapp.send", func(value amqp.Delivery) {
 		ctx := context.Background()
-		var sentText dto.SentTextDto
+		var sentText dto.SendTextDto
 		if err := json.Unmarshal(value.Body, &sentText); err != nil {
-			hlog.Error("whatsAppController.SentMessage", fmt.Sprintf("err parsing: %s", err))
+			hlog.Error("whatsAppController.SendMessage", fmt.Sprintf("err parsing: %s", err))
 			return
 		}
-		w.whatsAppService.SentMessage(ctx, &sentText)
-	})
-}
-
-func (w *whatsAppController) DeliveredMessage() {
-	w.rabbit.Consume("whatsapp.delivered", func(value amqp.Delivery) {
-		ctx := context.Background()
-		receivedDto, err := parseJsonReceived(ctx, value.Body)
-		if err != nil {
-			hlog.Error("whatsAppController.DeliveredMessage", fmt.Sprintf("err parsing: %s", err))
+		if sentText.Message == "" {
+			hlog.Error("whatsAppController.SendMessage", "Message can't be empty")
+			return
 		}
-		w.whatsAppService.DeliveredMessage(ctx, receivedDto)
+		w.whatsAppService.SendMessage(ctx, &sentText)
 	})
 }
 
-func (w *whatsAppController) ReceivedMessage() {
-	w.rabbit.Consume("whatsapp.received", func(value amqp.Delivery) {
+// ReceiveMessage is when other numbers send message to me
+func (w *whatsAppController) ReceiveMessage() {
+	w.rabbit.Consume("whatsapp.message", func(value amqp.Delivery) {
 		ctx := context.Background()
-		receivedDto, err := parseJsonReceived(ctx, value.Body)
-		if err != nil {
-			hlog.Error("whatsAppController.ReceivedMessage", fmt.Sprintf("err parsing: %s", err))
+		var changeStatusDto dto.WhatsAppJSONReceived
+		if err := json.Unmarshal(value.Body, &changeStatusDto); err != nil {
+			hlog.Error("whatsAppController.ReceiveMessage", fmt.Sprintf("err parsing: %s", err))
+			return
 		}
-		w.whatsAppService.SetMessageStatus(ctx, receivedDto)
+		w.whatsAppService.ReceiveMessage(ctx, &changeStatusDto)
 	})
 }
 
-func (w *whatsAppController) ReadMessage() {
-	w.rabbit.Consume("whatsapp.read", func(value amqp.Delivery) {
+func (w *whatsAppController) ChangeStatus() {
+	w.rabbit.Consume("whatsapp.statuses", func(value amqp.Delivery) {
 		ctx := context.Background()
-		receivedDto, err := parseJsonReceived(ctx, value.Body)
-		if err != nil {
-			hlog.Error("whatsAppController.ReadMessage", fmt.Sprintf("err parsing: %s", err))
+		var changeStatusDto dto.ChangeStatusDto
+		if err := json.Unmarshal(value.Body, &changeStatusDto); err != nil {
+			hlog.Error("whatsAppController.ChangeStatus", fmt.Sprintf("err parsing: %s", err))
+			return
 		}
-		w.whatsAppService.SetMessageStatus(ctx, receivedDto)
+		if changeStatusDto.MessageId == "" {
+			hlog.Error("whatsAppController.ChangeStatus", "Message can't be empty")
+			return
+		}
+		w.whatsAppService.ChangeStatusMessage(ctx, &changeStatusDto)
 	})
 }
 
-func parseJsonReceived(_ context.Context, body []byte) (*entity.WhatsAppJSONReceived, error) {
+func parseJsonReceived(_ context.Context, body []byte) (*dto.WhatsAppJSONReceived, error) {
 	hlog.Debug("whatsAppController.parseJsonReceived", fmt.Sprintf("%s", body))
-	var receivedDto entity.WhatsAppJSONReceived
+	var receivedDto dto.WhatsAppJSONReceived
 	if err := json.Unmarshal(body, &receivedDto); err != nil {
 		return nil, err
 	}

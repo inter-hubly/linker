@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/inter-hubly/linker/internal/domain/dto"
+	dto "github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/domain/entity"
 	"github.com/inter-hubly/linker/internal/mediator"
 	"github.com/inter-hubly/linker/internal/repository"
-	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/hlog"
 )
 
 type WhatsApp interface {
-	SentMessage(ctx context.Context, message *dto.SentTextDto) error
-	DeliveredMessage(ctx context.Context, message *entity.WhatsAppJSONReceived) error
-	SetMessageStatus(ctx context.Context, message *entity.WhatsAppJSONReceived) error
+	ChangeStatusMessage(ctx context.Context, message *dto.ChangeStatusDto) error
+	SendMessage(ctx context.Context, template *dto.SendTextDto) error
 	StartTemplate(ctx context.Context, template *dto.StartTemplateDto) error
+	ReceiveMessage(ctx context.Context, dto *dto.WhatsAppJSONReceived) error
 }
 
 var (
@@ -44,29 +44,43 @@ func (w *whatsAppService) StartTemplate(ctx context.Context, template *dto.Start
 	return w.whatsappMediator.StartTemplate(ctx, template)
 }
 
-func (w *whatsAppService) SentMessage(ctx context.Context, template *dto.SentTextDto) error {
-	hlog.Debug("whatsAppService.SentMessage", fmt.Sprintf("%v", template))
-	message := entity.WhatsAppJSONReceived{
-		Owner: entity.WhatsAppPhoneIdDto{
-			PhoneNumberID:      "515719138282305",
+func (w *whatsAppService) SendMessage(ctx context.Context, template *dto.SendTextDto) error {
+	hlog.Debug("whatsAppService.SendMessage", fmt.Sprintf("%v", template))
+	message := dto.WhatsAppJSONReceived{
+		Owner: dto.WhatsAppPhoneIdDto{
+			PhoneNumberID:      template.SenderAndReceiver.OwnerNumberId,
 			DisplayPhoneNumber: template.SenderAndReceiver.From,
 		},
-		SenderPhone: template.SenderAndReceiver.To,
-		Metadata: entity.WhatsAppMetadataDto{
+		SenderPhoneId: template.SenderAndReceiver.To,
+		Metadata: dto.WhatsAppMetadataDto{
 			Body: template.Message,
 		},
 	}
 
-	return w.whatsappMediator.SentMessage(ctx, &message)
+	return w.whatsappMediator.SendMessage(ctx, &message)
 }
 
-func (w *whatsAppService) DeliveredMessage(ctx context.Context, message *entity.WhatsAppJSONReceived) error {
-	hlog.Debug("whatsAppService.DeliveredMessage", fmt.Sprintf("%v", message))
-
-	return w.whatsappMediator.DeliveredMessage(ctx, message)
+func (w *whatsAppService) ReceiveMessage(ctx context.Context, dto *dto.WhatsAppJSONReceived) error {
+	hlog.Debug("whatsAppService.ReceiveMessage", fmt.Sprintf("%v", dto))
+	chat := entity.Chat{
+		MessageId:  dto.Metadata.MessageId,
+		OwnerId:    dto.Owner.PhoneNumberID,
+		OwnerPhone: dto.Owner.DisplayPhoneNumber,
+		ToPhoneId:  dto.SenderPhoneId,
+		Message:    dto.Metadata.Body,
+	}
+	_, err := w.whatsappRepository.PersistMessage(ctx, &chat)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (w *whatsAppService) SetMessageStatus(ctx context.Context, message *entity.WhatsAppJSONReceived) error {
-	hlog.Debug("whatsAppService.ReceiveMessage", fmt.Sprintf("%v", message))
-	return w.whatsappMediator.SetStatus(ctx, message)
+func (w *whatsAppService) ChangeStatusMessage(ctx context.Context, message *dto.ChangeStatusDto) error {
+	hlog.Debug("whatsAppService.ChangeStatusMessage", fmt.Sprintf("%v", message))
+
+	if err := w.whatsappRepository.SetStatusMessageById(ctx, message.MessageId, message.Status); err != nil {
+		return err
+	}
+	return nil
 }

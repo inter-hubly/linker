@@ -5,13 +5,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/domain/entity"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
-	"github.com/inter-hubly/pilot/domain/entity"
 )
 
 type WhatsApp interface {
 	PersistMessage(ctx context.Context, message *entity.Chat) (string, error)
-	SetStatusMessageById(ctx context.Context, messageId string, status entity.MessageStatus) error
+	SetStatusMessageById(ctx context.Context, messageId string, status dto.MessageStatus) error
 }
 
 var (
@@ -44,7 +45,7 @@ func (w *whatsAppRepository) PersistMessage(ctx context.Context, message *entity
 func (w *whatsAppRepository) SetStatusMessageById(
 	ctx context.Context,
 	messageId string,
-	status entity.MessageStatus,
+	status dto.MessageStatus,
 ) error {
 	query := map[string]interface{}{
 		"script": map[string]interface{}{

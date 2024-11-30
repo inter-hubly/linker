@@ -3,18 +3,18 @@ package mediator
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
-	"github.com/inter-hubly/linker/internal/domain/dto"
+	dto "github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/domain/entity"
 	"github.com/inter-hubly/linker/internal/gateway"
 	"github.com/inter-hubly/linker/internal/repository"
-	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/hlog"
 )
 
 type WhatsApp interface {
-	SentMessage(ctx context.Context, message *entity.WhatsAppJSONReceived) error
-	SetStatus(ctx context.Context, message *entity.WhatsAppJSONReceived) error
+	SendMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error
 	StartTemplate(ctx context.Context, template *dto.StartTemplateDto) error
 }
 
@@ -34,7 +34,6 @@ func NewWhatsApp() WhatsApp {
 }
 
 func (w *whatsAppMediator) StartTemplate(ctx context.Context, template *dto.StartTemplateDto) error {
-	ownerId := "515719138282305"
 	message := dto.GatewayWhatsAppMessageDto{
 		MessagingProduct: w.messageProduct,
 		To:               template.SenderAndReceiver.To,
@@ -46,33 +45,41 @@ func (w *whatsAppMediator) StartTemplate(ctx context.Context, template *dto.Star
 			},
 		},
 	}
-	res, err := w.whatsAppGateway.SendMessage(ctx, ownerId, &message)
-	if err != nil {
+	res, err := w.whatsAppGateway.SendMessage(ctx, template.SenderAndReceiver.OwnerNumberId, &message)
+	// need persist even with errors
+	chatDb := entity.Chat{}
+	chatDb.OwnerId = template.SenderAndReceiver.OwnerNumberId
+	chatDb.Type = entity.ChatTemplate
+	chatDb.TemplateName = template.Name
+	chatDb.OwnerPhone = template.SenderAndReceiver.From
+	chatDb.ToPhoneId = template.SenderAndReceiver.To
+
+	if err == nil {
+		chatDb.MessageId = res.Messages[0].Id
+
+		chatDb.Audit = append(chatDb.Audit, entity.ChatMessageStatusTime{
+			Status:     dto.StartStatus,
+			ReceivedAt: time.Now().String(),
+		})
+	} else {
 		hlog.Error("whatsAppMediator.StartTemplate", "error when send message to whatsApp", err)
-		return err
+		chatDb.Audit = append(chatDb.Audit, entity.ChatMessageStatusTime{
+			Status:     dto.ErrorStatus,
+			ReceivedAt: fmt.Sprint(time.Now().Unix()),
+		})
 	}
 
-	chatDb := entity.Chat{
-		MessageId: res.Messages[0].Id,
-		OwnerId:   ownerId,
-		From:      template.SenderAndReceiver.From,
-		To:        template.SenderAndReceiver.To,
-	}
-	chatDb.Audit = append(chatDb.Audit, entity.ChatMessageStatusTime{
-		Status:     entity.DeliveredStatus,
-		ReceivedAt: time.Now().String(),
-	})
 	w.whatsAppRepository.PersistMessage(ctx, &chatDb)
 
 	return nil
 }
 
-func (w *whatsAppMediator) SentMessage(ctx context.Context, message *entity.WhatsAppJSONReceived) error {
+func (w *whatsAppMediator) SendMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error {
 	chanError := make(chan *errValue)
 
-	messageToWhats := w.createTextMessage(ctx, message.SenderPhone, message.Metadata.Body)
+	messageToWhats := w.createTextMessage(ctx, message.SenderPhoneId, message.Metadata.Body)
 
-	go w.sendMessageToWhatsApp(ctx, messageToWhats, chanError)
+	w.sendMessageToWhatsApp(ctx, messageToWhats, chanError)
 
 	go w.persistMessageInElastic(ctx, message, chanError)
 
@@ -87,17 +94,21 @@ func (w *whatsAppMediator) SentMessage(ctx context.Context, message *entity.What
 	return nil
 }
 
-func (w *whatsAppMediator) SetStatus(ctx context.Context, message *entity.WhatsAppJSONReceived) error {
-	w.whatsAppRepository.SetStatusMessageById(ctx, message.Metadata.MessageId, message.Status, entity.ChatMessageStatusTime{
-		Status:     "send",
-		ReceivedAt: message.Metadata.Timestamp,
-	})
-	return nil
-}
+func (w *whatsAppMediator) persistMessageInElastic(ctx context.Context, received *dto.WhatsAppJSONReceived, chanError chan *errValue) {
+	chat := entity.Chat{
+		MessageId:  received.Metadata.MessageId,
+		OwnerId:    received.Owner.PhoneNumberID,
+		OwnerPhone: received.Owner.DisplayPhoneNumber,
+		ToPhoneId:  received.SenderPhoneId,
+		Message:    received.Metadata.Body,
+		Audit: []entity.ChatMessageStatusTime{
+			{
+				Status: received.Status,
+			},
+		},
+	}
 
-func (w *whatsAppMediator) persistMessageInElastic(ctx context.Context, message *entity.WhatsAppJSONReceived, chanError chan *errValue) {
-	normalizedChat := entity.NormalizeWhatsAppMessage(message)
-	_, err := w.whatsAppRepository.PersistMessage(ctx, normalizedChat)
+	_, err := w.whatsAppRepository.PersistMessage(ctx, &chat)
 	if err != nil {
 		hlog.Error("whatsAppMediator.persistMessageInElastic", "error when persist message", err)
 		chanError <- &errValue{

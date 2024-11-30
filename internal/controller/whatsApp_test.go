@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/inter-hubly/pilot/domain/entity"
+	"github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,7 +26,7 @@ func TestWhatsAppController(t *testing.T) {
 			assert.Equal(t, received.Id, "510006955530686")
 			assert.Equal(t, received.Owner.PhoneNumberID, "515719138282305")
 			assert.Equal(t, received.Owner.DisplayPhoneNumber, "15551817023")
-			assert.Equal(t, received.Status, entity.DeliveredStatus)
+			assert.Equal(t, received.Status, dto.DeliveredStatus)
 		})
 	}
 }

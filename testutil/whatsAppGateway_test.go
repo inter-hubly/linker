@@ -4,8 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/inter-hubly/linker/internal/domain/dto"
+	dto "github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
 	"github.com/inter-hubly/linker/internal/gateway"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +19,7 @@ func TestWhatsAppGateway(t *testing.T) {
 		messageDto := dto.GatewayWhatsAppMessageDto{
 			MessagingProduct: "whatsapp",
 			RecipientType:    "individual",
-			To:               messageTest.SenderPhone,
+			To:               messageTest.SenderPhoneId,
 			Type:             "text",
 			Text: &dto.WhatsAppTextDto{
 				PreviewUrl: true,

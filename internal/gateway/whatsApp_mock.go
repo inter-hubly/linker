@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	dto "github.com/inter-hubly/pilot/domain/entity"
+	dto "github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
 )
 
 // MockWhatsApp is a mock of WhatsApp interface.
@@ -76,15 +76,16 @@ func (mr *MockWhatsAppMockRecorder) ReceiveMessage(ctx, message interface{}) *go
 }
 
 // SendMessage mocks base method.
-func (m *MockWhatsApp) SendMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error {
+func (m *MockWhatsApp) SendMessage(ctx context.Context, phoneNumberId string, message *dto.GatewayWhatsAppMessageDto) (*dto.ResponseWhatsAppGateway, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendMessage", ctx, message)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "SendMessage", ctx, phoneNumberId, message)
+	ret0, _ := ret[0].(*dto.ResponseWhatsAppGateway)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // SendMessage indicates an expected call of SendMessage.
-func (mr *MockWhatsAppMockRecorder) SendMessage(ctx, message interface{}) *gomock.Call {
+func (mr *MockWhatsAppMockRecorder) SendMessage(ctx, phoneNumberId, message interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockWhatsApp)(nil).SendMessage), ctx, message)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockWhatsApp)(nil).SendMessage), ctx, phoneNumberId, message)
 }

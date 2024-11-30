@@ -9,22 +9,20 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/inter-hubly/linker/internal/domain/dto"
-	"github.com/inter-hubly/pilot/domain/entity"
+	dto "github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
 	"github.com/inter-hubly/pilot/hlog"
 )
 
 type WhatsApp interface {
 	GetAccessToken(ctx context.Context)
 	SendMessage(ctx context.Context, phoneNumberId string, message *dto.GatewayWhatsAppMessageDto) (*dto.ResponseWhatsAppGateway, error)
-	ReceiveMessage(ctx context.Context, message *entity.WhatsAppJSONReceived) error
 	ReadyMessage(ctx context.Context, phoneNumberId, messageId string) error
 }
 
 var (
 	whatsAppOnce  sync.Once
 	whatsApp      *whatsAppGateway
-	graphAPIToken = "EAAP8VwxXKXkBO7JxXTiCjK4LnDBKnETsLJOVlGpwSijypnkag3sqUobddSbJZAbIjr8HZCrzi45ZBUWLoZBYoPRZBchsRCWzelMxXwN7K336aEzCgFYuxgsgZCXR2B10tQletxewE7V6BIVjv9oEmaxgbtq7wDcWhmwv1i157rR8OCHxcg4OIOOqjCChSgZA46pk3ZAZBoNU88BZA3Dj6OY29U6L4r"
+	graphAPIToken = "EAAP8VwxXKXkBO3gHtc0qjfeSRVXzzhrdYCc0v7r06K1O85Sbtco6uFQlcWZCRmjncveFaMmV3WpBIQ6w7ivW6a2csOCA4UKZBaBRs95axqsK5Pnm8BcaUyzamJqoBRlRZBk7uruHaQdwlqxnETfAf4VLczNH2R0Ds1qHl3c5d8QnepG3ItvlpSb6ZAbhol3rV8sZCeHEyuMYpoVosG0f568TA"
 )
 
 type whatsAppGateway struct {
@@ -58,10 +56,6 @@ func (w *whatsAppGateway) SendMessage(
 
 func (w *whatsAppGateway) GetAccessToken(ctx context.Context) {
 
-}
-
-func (w *whatsAppGateway) ReceiveMessage(ctx context.Context, message *entity.WhatsAppJSONReceived) error {
-	return nil
 }
 
 func (w *whatsAppGateway) ReadyMessage(ctx context.Context, phoneNumberId, messageId string) error {
@@ -117,5 +111,4 @@ func (w *whatsAppGateway) makeRequest(method, url string, data any) (*dto.Respon
 	}
 
 	return &res, err
-
 }
