@@ -38,8 +38,9 @@ func SentMessage() ([]byte, error) {
 func GetStartTemplateMessage() dto.StartTemplateDto {
 	return dto.StartTemplateDto{
 		SenderAndReceiver: dto.SenderAndReceiverDto{
-			To:   "+5548991784586",
-			From: "15551817023",
+			OwnerNumberId: "515719138282305",
+			To:            "+5548991784586",
+			From:          "15551817023",
 		},
 		Name:     "hello_world",
 		Language: "en_US",
