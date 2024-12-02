@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,7 +22,7 @@ func TestWhatsApp(t *testing.T) {
 	} {
 		t.Run(v.testName, func(t *testing.T) {
 			ctx := context.Background()
-			var entityWhats dto.WhatsAppJSONReceived
+			var entityWhats dto.dto
 			err := json.Unmarshal([]byte(jsonReceived), &entityWhats)
 			assert.Nil(t, err)
 

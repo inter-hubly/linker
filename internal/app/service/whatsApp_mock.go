@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	dto "github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
+	dto2 "github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
 )
 
 // MockWhatsApp is a mock of WhatsApp interface.
@@ -36,7 +36,7 @@ func (m *MockWhatsApp) EXPECT() *MockWhatsAppMockRecorder {
 }
 
 // ChangeStatusMessage mocks base method.
-func (m *MockWhatsApp) ChangeStatusMessage(ctx context.Context, message *dto.ChangeStatusDto) error {
+func (m *MockWhatsApp) ChangeStatusMessage(ctx context.Context, message *dto2.ChangeStatusDto) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChangeStatusMessage", ctx, message)
 	ret0, _ := ret[0].(error)
@@ -50,7 +50,7 @@ func (mr *MockWhatsAppMockRecorder) ChangeStatusMessage(ctx, message interface{}
 }
 
 // SentMessage mocks base method.
-func (m *MockWhatsApp) SentMessage(ctx context.Context, template *dto.SendTextDto) error {
+func (m *MockWhatsApp) SentMessage(ctx context.Context, template *dto2.SendTextDto) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SentMessage", ctx, template)
 	ret0, _ := ret[0].(error)
@@ -64,7 +64,7 @@ func (mr *MockWhatsAppMockRecorder) SentMessage(ctx, template interface{}) *gomo
 }
 
 // StartTemplate mocks base method.
-func (m *MockWhatsApp) StartTemplate(ctx context.Context, template *dto.StartTemplateDto) error {
+func (m *MockWhatsApp) StartTemplate(ctx context.Context, template *dto2.StartTemplateDto) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StartTemplate", ctx, template)
 	ret0, _ := ret[0].(error)

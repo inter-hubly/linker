@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	dto "github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
-	"github.com/inter-hubly/linker/internal/gateway"
-	"github.com/inter-hubly/linker/internal/repository"
+	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/app/gateway"
+	"github.com/inter-hubly/linker/internal/app/repository"
 	"github.com/inter-hubly/linker/testutil"
 	"github.com/stretchr/testify/assert"
 )

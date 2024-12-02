@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/inter-hubly/linker/internal/express"
+	"github.com/inter-hubly/linker/internal/infraestructure/express"
 	rabbitmq "github.com/inter-hubly/pilot/broker"
 	"github.com/inter-hubly/pilot/server"
 )

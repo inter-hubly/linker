@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"sync"
 
-	dto "github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
 	"github.com/inter-hubly/pilot/hlog"
 )
 
@@ -22,7 +22,7 @@ type WhatsApp interface {
 var (
 	whatsAppOnce  sync.Once
 	whatsApp      *whatsAppGateway
-	graphAPIToken = "EAAP8VwxXKXkBO3gHtc0qjfeSRVXzzhrdYCc0v7r06K1O85Sbtco6uFQlcWZCRmjncveFaMmV3WpBIQ6w7ivW6a2csOCA4UKZBaBRs95axqsK5Pnm8BcaUyzamJqoBRlRZBk7uruHaQdwlqxnETfAf4VLczNH2R0Ds1qHl3c5d8QnepG3ItvlpSb6ZAbhol3rV8sZCeHEyuMYpoVosG0f568TA"
+	graphAPIToken = "EAAP8VwxXKXkBOzi3RWWigxtGyIbGs43lAi9Y9FnLGHOf3uFzZAmOZBJwputdhCjmf9d2hRwMQ53h3GuW7kyJ1pTZB0pslIWNzsAOj0ZA0kTuchBvnKcMewGvDacSj40jPlBMeY8sNrqqZAKwcKfENFzf5bdtQyJ5S3VCkTZCw8YcMeAO9L7QZAbz65e8OEza0ufkhLzhUweKkbLRMUxqDt7OmGZA"
 )
 
 type whatsAppGateway struct {

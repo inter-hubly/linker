@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	dto "github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
+	dto2 "github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
 )
 
 // MockWhatsApp is a mock of WhatsApp interface.
@@ -62,7 +62,7 @@ func (mr *MockWhatsAppMockRecorder) ReadyMessage(ctx, phoneNumberId, messageId i
 }
 
 // ReceiveMessage mocks base method.
-func (m *MockWhatsApp) ReceiveMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error {
+func (m *MockWhatsApp) ReceiveMessage(ctx context.Context, message *dto2.WhatsAppJSONReceived) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReceiveMessage", ctx, message)
 	ret0, _ := ret[0].(error)
@@ -76,10 +76,10 @@ func (mr *MockWhatsAppMockRecorder) ReceiveMessage(ctx, message interface{}) *go
 }
 
 // SendMessage mocks base method.
-func (m *MockWhatsApp) SendMessage(ctx context.Context, phoneNumberId string, message *dto.GatewayWhatsAppMessageDto) (*dto.ResponseWhatsAppGateway, error) {
+func (m *MockWhatsApp) SendMessage(ctx context.Context, phoneNumberId string, message *dto2.GatewayWhatsAppMessageDto) (*dto2.ResponseWhatsAppGateway, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendMessage", ctx, phoneNumberId, message)
-	ret0, _ := ret[0].(*dto.ResponseWhatsAppGateway)
+	ret0, _ := ret[0].(*dto2.ResponseWhatsAppGateway)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

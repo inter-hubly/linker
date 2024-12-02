@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
-	entity2 "github.com/inter-hubly/linker/internal/domain/entity"
+	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
+	entity2 "github.com/inter-hubly/linker/internal/app/domain/entity"
 	"github.com/inter-hubly/linker/testutil"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
 	"github.com/inter-hubly/pilot/server"

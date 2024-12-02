@@ -6,16 +6,16 @@ import (
 	"fmt"
 	"time"
 
-	dto "github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
-	"github.com/inter-hubly/linker/internal/domain/entity"
-	"github.com/inter-hubly/linker/internal/gateway"
-	"github.com/inter-hubly/linker/internal/repository"
+	dto2 "github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/app/domain/entity"
+	"github.com/inter-hubly/linker/internal/app/gateway"
+	"github.com/inter-hubly/linker/internal/app/repository"
 	"github.com/inter-hubly/pilot/hlog"
 )
 
 type WhatsApp interface {
-	SendMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error
-	StartTemplate(ctx context.Context, template *dto.StartTemplateDto) error
+	SendMessage(ctx context.Context, message *dto2.WhatsAppJSONReceived) error
+	StartTemplate(ctx context.Context, template *dto2.StartTemplateDto) error
 }
 
 type whatsAppMediator struct {
@@ -33,14 +33,14 @@ func NewWhatsApp() WhatsApp {
 
 }
 
-func (w *whatsAppMediator) StartTemplate(ctx context.Context, template *dto.StartTemplateDto) error {
-	message := dto.GatewayWhatsAppMessageDto{
+func (w *whatsAppMediator) StartTemplate(ctx context.Context, template *dto2.StartTemplateDto) error {
+	message := dto2.GatewayWhatsAppMessageDto{
 		MessagingProduct: w.messageProduct,
 		To:               template.SenderAndReceiver.To,
-		Type:             dto.TemplateMessageType,
-		Template: &dto.TemplateDto{
+		Type:             dto2.TemplateMessageType,
+		Template: &dto2.TemplateDto{
 			Name: template.Name,
-			LanguageDto: dto.LanguageDto{
+			LanguageDto: dto2.LanguageDto{
 				Code: template.Language,
 			},
 		},
@@ -58,13 +58,13 @@ func (w *whatsAppMediator) StartTemplate(ctx context.Context, template *dto.Star
 		chatDb.MessageId = res.Messages[0].Id
 
 		chatDb.Audit = append(chatDb.Audit, entity.ChatMessageStatusTime{
-			Status:     dto.StartStatus,
+			Status:     dto2.StartStatus,
 			ReceivedAt: time.Now().String(),
 		})
 	} else {
 		hlog.Error("whatsAppMediator.StartTemplate", "error when send message to whatsApp", err)
 		chatDb.Audit = append(chatDb.Audit, entity.ChatMessageStatusTime{
-			Status:     dto.ErrorStatus,
+			Status:     dto2.ErrorStatus,
 			ReceivedAt: fmt.Sprint(time.Now().Unix()),
 		})
 	}
@@ -74,7 +74,7 @@ func (w *whatsAppMediator) StartTemplate(ctx context.Context, template *dto.Star
 	return nil
 }
 
-func (w *whatsAppMediator) SendMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error {
+func (w *whatsAppMediator) SendMessage(ctx context.Context, message *dto2.WhatsAppJSONReceived) error {
 	chanError := make(chan *errValue)
 
 	messageToWhats := w.createTextMessage(ctx, message.SenderPhoneId, message.Metadata.Body)
@@ -94,7 +94,7 @@ func (w *whatsAppMediator) SendMessage(ctx context.Context, message *dto.WhatsAp
 	return nil
 }
 
-func (w *whatsAppMediator) persistMessageInElastic(ctx context.Context, received *dto.WhatsAppJSONReceived, chanError chan *errValue) {
+func (w *whatsAppMediator) persistMessageInElastic(ctx context.Context, received *dto2.WhatsAppJSONReceived, chanError chan *errValue) {
 	chat := entity.Chat{
 		MessageId:  received.Metadata.MessageId,
 		OwnerId:    received.Owner.PhoneNumberID,
@@ -119,7 +119,7 @@ func (w *whatsAppMediator) persistMessageInElastic(ctx context.Context, received
 	chanError <- nil
 }
 
-func (w *whatsAppMediator) sendMessageToWhatsApp(ctx context.Context, message *dto.GatewayWhatsAppMessageDto, chanError chan *errValue) {
+func (w *whatsAppMediator) sendMessageToWhatsApp(ctx context.Context, message *dto2.GatewayWhatsAppMessageDto, chanError chan *errValue) {
 	_, err := w.whatsAppGateway.SendMessage(ctx, "515719138282305", message)
 	if err != nil {
 		hlog.Error("whatsAppMediator.sendMessageToWhatsApp", "error when send message", err)
@@ -141,28 +141,28 @@ type errValue struct {
 	err     error
 }
 
-func (w *whatsAppMediator) createTextMessage(ctx context.Context, to, body string) *dto.GatewayWhatsAppMessageDto {
-	return &dto.GatewayWhatsAppMessageDto{
+func (w *whatsAppMediator) createTextMessage(ctx context.Context, to, body string) *dto2.GatewayWhatsAppMessageDto {
+	return &dto2.GatewayWhatsAppMessageDto{
 		MessagingProduct: w.messageProduct,
 		To:               to,
-		Type:             dto.TextMessageType,
+		Type:             dto2.TextMessageType,
 		RecipientType:    "individual",
-		Text: &dto.WhatsAppTextDto{
+		Text: &dto2.WhatsAppTextDto{
 			PreviewUrl: false,
 			Body:       body,
 		},
 	}
 }
 
-func (w *whatsAppMediator) createTemplateMessage(ctx context.Context, to, name string) *dto.GatewayWhatsAppMessageDto {
+func (w *whatsAppMediator) createTemplateMessage(ctx context.Context, to, name string) *dto2.GatewayWhatsAppMessageDto {
 	// TODO Não seria melhor um DDD do numero de telefone?
-	return &dto.GatewayWhatsAppMessageDto{
+	return &dto2.GatewayWhatsAppMessageDto{
 		MessagingProduct: w.messageProduct,
 		To:               to,
-		Type:             dto.TemplateMessageType,
-		Template: &dto.TemplateDto{
+		Type:             dto2.TemplateMessageType,
+		Template: &dto2.TemplateDto{
 			Name: name,
-			LanguageDto: dto.LanguageDto{
+			LanguageDto: dto2.LanguageDto{
 				Code: "pt-br",
 			},
 		},

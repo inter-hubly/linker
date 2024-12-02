@@ -1,7 +1,7 @@
 package entity
 
 import (
-	dto "github.com/inter-hubly/linker/internal/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
 )
 
 type ChatType string

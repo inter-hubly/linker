@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/inter-hubly/linker/internal/express"
+	"github.com/inter-hubly/linker/internal/infraestructure/express"
 	"github.com/inter-hubly/pilot/server"
 )
 
