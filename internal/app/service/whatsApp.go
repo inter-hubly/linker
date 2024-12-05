@@ -70,6 +70,7 @@ func (w *whatsAppService) ReceiveMessage(ctx context.Context, dto *dto2.WhatsApp
 		Message:    dto.Metadata.Body,
 	}
 	_, err := w.whatsappRepository.PersistMessage(ctx, &chat)
+
 	if err != nil {
 		return err
 	}

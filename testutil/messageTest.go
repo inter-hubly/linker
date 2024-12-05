@@ -23,8 +23,9 @@ func GetMessageTest() *dto2.WhatsAppJSONReceived {
 func SentMessage() ([]byte, error) {
 	res := dto2.SendTextDto{
 		SenderAndReceiver: dto2.SenderAndReceiverDto{
-			To:   "5548991784586",
-			From: "15551817023",
+			To:            "5548991784586",
+			From:          "15551817023",
+			OwnerNumberId: "515719138282305",
 		},
 		Message: "Messagem de teste",
 	}

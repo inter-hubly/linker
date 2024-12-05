@@ -22,11 +22,11 @@ func TestEnd2End(t *testing.T) {
 	}
 
 	time.Sleep(5 * time.Second)
-	message, err := StartMessage()
+	message, err := SentMessage()
 	if err != nil {
 		t.Fatal(err)
 	}
-	rabbitmq.GetConnection().Publish("whatsapp.start", message)
+	rabbitmq.GetConnection().Publish("whatsapp.send", message)
 	wg.Wait()
 	// time.Sleep(5 * time.Second)
 	// wg.Done()

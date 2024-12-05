@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	dto "github.com/inter-hubly/linker/internal/app/domain/dto/pulse"
 	dto2 "github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
 	"github.com/inter-hubly/linker/internal/app/domain/entity"
 	"github.com/inter-hubly/linker/internal/app/gateway"
@@ -22,6 +23,7 @@ type whatsAppMediator struct {
 	messageProduct     string
 	whatsAppRepository repository.WhatsApp
 	whatsAppGateway    gateway.WhatsApp
+	pulseGateway       gateway.Pulse
 }
 
 func NewWhatsApp() WhatsApp {
@@ -29,6 +31,7 @@ func NewWhatsApp() WhatsApp {
 		messageProduct:     "whatsapp",
 		whatsAppRepository: repository.NewWhatsApp(),
 		whatsAppGateway:    gateway.NewWhatsApp(),
+		pulseGateway:       gateway.NewPulse(),
 	}
 
 }
@@ -79,7 +82,7 @@ func (w *whatsAppMediator) SendMessage(ctx context.Context, message *dto2.WhatsA
 
 	messageToWhats := w.createTextMessage(ctx, message.SenderPhoneId, message.Metadata.Body)
 
-	w.sendMessageToWhatsApp(ctx, messageToWhats, chanError)
+	go w.sendMessageToWhatsApp(ctx, messageToWhats, chanError)
 
 	go w.persistMessageInElastic(ctx, message, chanError)
 
@@ -91,6 +94,14 @@ func (w *whatsAppMediator) SendMessage(ctx context.Context, message *dto2.WhatsA
 			}
 		}
 	}
+
+	if err := w.pulseGateway.HandleMessage(ctx, message.Owner.PhoneNumberID, &dto.PulseDto{
+		Message: message.Metadata.Body,
+		ToId:    message.SenderPhoneId,
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -116,6 +127,7 @@ func (w *whatsAppMediator) persistMessageInElastic(ctx context.Context, received
 			err:     err,
 		}
 	}
+
 	chanError <- nil
 }
 

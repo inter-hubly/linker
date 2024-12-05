@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	dto2 "github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
+	dto "github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
 	"github.com/inter-hubly/linker/internal/app/service"
 	"github.com/inter-hubly/pilot/broker"
 	"github.com/inter-hubly/pilot/hlog"
@@ -48,7 +48,7 @@ type whatsAppController struct {
 func (w *whatsAppController) StartTemplate() {
 	w.rabbit.Consume("whatsapp.start", func(value amqp.Delivery) {
 		ctx := context.Background()
-		var startTemplate dto2.StartTemplateDto
+		var startTemplate dto.StartTemplateDto
 		if err := json.Unmarshal(value.Body, &startTemplate); err != nil {
 			hlog.Error("whatsAppController.StartTemplate", fmt.Sprintf("err parsing: %s", err))
 			return
@@ -64,7 +64,7 @@ func (w *whatsAppController) StartTemplate() {
 func (w *whatsAppController) SendMessage() {
 	w.rabbit.Consume("whatsapp.send", func(value amqp.Delivery) {
 		ctx := context.Background()
-		var sentText dto2.SendTextDto
+		var sentText dto.SendTextDto
 		if err := json.Unmarshal(value.Body, &sentText); err != nil {
 			hlog.Error("whatsAppController.SendMessage", fmt.Sprintf("err parsing: %s", err))
 			return
@@ -81,7 +81,7 @@ func (w *whatsAppController) SendMessage() {
 func (w *whatsAppController) ReceiveMessage() {
 	w.rabbit.Consume("whatsapp.message", func(value amqp.Delivery) {
 		ctx := context.Background()
-		var changeStatusDto dto2.WhatsAppJSONReceived
+		var changeStatusDto dto.WhatsAppJSONReceived
 		if err := json.Unmarshal(value.Body, &changeStatusDto); err != nil {
 			hlog.Error("whatsAppController.ReceiveMessage", fmt.Sprintf("err parsing: %s", err))
 			return
@@ -93,7 +93,7 @@ func (w *whatsAppController) ReceiveMessage() {
 func (w *whatsAppController) ChangeStatus() {
 	w.rabbit.Consume("whatsapp.statuses", func(value amqp.Delivery) {
 		ctx := context.Background()
-		var changeStatusDto dto2.ChangeStatusDto
+		var changeStatusDto dto.ChangeStatusDto
 		if err := json.Unmarshal(value.Body, &changeStatusDto); err != nil {
 			hlog.Error("whatsAppController.ChangeStatus", fmt.Sprintf("err parsing: %s", err))
 			return
@@ -106,9 +106,9 @@ func (w *whatsAppController) ChangeStatus() {
 	})
 }
 
-func parseJsonReceived(_ context.Context, body []byte) (*dto2.WhatsAppJSONReceived, error) {
+func parseJsonReceived(_ context.Context, body []byte) (*dto.WhatsAppJSONReceived, error) {
 	hlog.Debug("whatsAppController.parseJsonReceived", fmt.Sprintf("%s", body))
-	var receivedDto dto2.WhatsAppJSONReceived
+	var receivedDto dto.WhatsAppJSONReceived
 	if err := json.Unmarshal(body, &receivedDto); err != nil {
 		return nil, err
 	}

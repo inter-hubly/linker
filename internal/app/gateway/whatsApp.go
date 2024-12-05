@@ -22,7 +22,7 @@ type WhatsApp interface {
 var (
 	whatsAppOnce  sync.Once
 	whatsApp      *whatsAppGateway
-	graphAPIToken = "EAAP8VwxXKXkBOzi3RWWigxtGyIbGs43lAi9Y9FnLGHOf3uFzZAmOZBJwputdhCjmf9d2hRwMQ53h3GuW7kyJ1pTZB0pslIWNzsAOj0ZA0kTuchBvnKcMewGvDacSj40jPlBMeY8sNrqqZAKwcKfENFzf5bdtQyJ5S3VCkTZCw8YcMeAO9L7QZAbz65e8OEza0ufkhLzhUweKkbLRMUxqDt7OmGZA"
+	graphAPIToken = "EAAP8VwxXKXkBOxZBYHG5pN2FCNORFZB57k0QIhHfVMA9tKzDR3SEV3kZAU22VjWYOTRHYuecwsZAsXK5s9tXZAVr9UacYD4yXV7fzREEgBwZBC7MuO5fYscR0ZCJjHIsWdy5NWaqiwZCSvlsEMNYufh7r47lyr3Lqso2OODMVLLRhmgOCfgwY2j8wFhlfxVwYwiTJnIwgA5wjU6w5OM6JpUxdLdR9wZDZD"
 )
 
 type whatsAppGateway struct {
@@ -47,7 +47,7 @@ func (w *whatsAppGateway) SendMessage(
 	res, err := w.makeRequest(http.MethodPost, fmt.Sprintf("%s%s/messages", w.url, phoneNumberId), messageDto)
 
 	// TODO testar
-	if err != nil || res.Messages[0].MessageStatus != "accepted" {
+	if err != nil {
 		hlog.Error("whatsAppGateway.SendMessage", fmt.Sprintf("Failed to send message %v", messageDto))
 		return nil, err
 	}
