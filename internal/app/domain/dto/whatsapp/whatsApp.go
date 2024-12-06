@@ -13,7 +13,6 @@ type WhatsAppTextDto struct {
 }
 
 type SenderAndReceiverDto struct {
-	OwnerNumberId string `json:"OwnerNumberId"`
-	From          string `json:"from"`
-	To            string `json:"to"`
+	OwnerId string `json:"ownerId"`
+	To      string `json:"to"`
 }

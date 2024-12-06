@@ -3,17 +3,17 @@ package dto
 type GatewayWhatsAppMessageDto struct {
 	Text             *WhatsAppTextDto  `json:"text,omitempty"`
 	Template         *TemplateDto      `json:"template,omitempty"`
-	MessagingProduct string            `json:"messaging_product"`
-	RecipientType    string            `json:"recipient_type"`
-	To               string            `json:"to"`
 	Type             SenderMessageType `json:"type"`
+	MessagingProduct string            `json:"messaging_product"`
+	To               string            `json:"to"`
+	RecipientType    string            `json:"recipient_type"`
 }
 
 // ResponseWhatsAppGateway is a Gateway response
 type ResponseWhatsAppGateway struct {
-	MessagingProduct string    `json:"messaging_product"`
 	Contact          []Contact `json:"contact"`
 	Messages         []Message `json:"messages"`
+	MessagingProduct string    `json:"messaging_product"`
 }
 
 type Contact struct {

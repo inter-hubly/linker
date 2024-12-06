@@ -16,14 +16,14 @@ type Chat struct {
 	Type         ChatType                `json:"type"`
 	MessageId    string                  `json:"messageId,omitempty"`
 	OwnerId      string                  `json:"ownerId"`
-	OwnerPhone   string                  `json:"ownerPhone"`
-	ToPhoneId    string                  `json:"toPhoneId"`
-	ToPhone      string                  `json:"toPhone"`
+	ToPhoneId    string                  `json:"toPhoneId,omitempty"`
+	ToPhone      string                  `json:"toPhone,omitempty"`
 	TemplateName string                  `json:"templateName,omitempty"`
 	Message      string                  `json:"message,omitempty"`
+	IsOwner      bool                    `json:"isOwner"`
 }
 
 type ChatMessageStatusTime struct {
 	Status     dto.MessageStatus `json:"status"`
-	ReceivedAt string            `json:"receivedAt"`
+	ReceivedAt int64             `json:"receivedAt"`
 }

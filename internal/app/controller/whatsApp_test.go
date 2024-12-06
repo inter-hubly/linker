@@ -25,7 +25,6 @@ func TestWhatsAppController(t *testing.T) {
 
 			assert.Equal(t, received.Id, "510006955530686")
 			assert.Equal(t, received.Owner.PhoneNumberID, "515719138282305")
-			assert.Equal(t, received.Owner.DisplayPhoneNumber, "15551817023")
 			assert.Equal(t, received.Status, dto.DeliveredStatus)
 		})
 	}

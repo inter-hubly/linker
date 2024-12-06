@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -16,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const environmentDatabase = false
+const containerEnvironments = true
 
 func TestWhatsApp(t *testing.T) {
 	ctx := context.Background()
@@ -25,7 +24,7 @@ func TestWhatsApp(t *testing.T) {
 	var close func(ctx context.Context) error
 	var err error
 
-	if environmentDatabase {
+	if containerEnvironments {
 		host, close, err = testutils.ElasticSearch(ctx)
 		if err != nil {
 			t.Fatal(err)
@@ -52,7 +51,7 @@ func TestWhatsApp(t *testing.T) {
 
 				chatToSave.Audit = append(chatToSave.Audit, entity2.ChatMessageStatusTime{
 					Status:     dto.DeliveredStatus,
-					ReceivedAt: fmt.Sprintf("%d", time.Now().Unix()),
+					ReceivedAt: time.Now().Unix(),
 				})
 				return repository.PersistMessage(ctx, chatToSave)
 			},
@@ -64,7 +63,7 @@ func TestWhatsApp(t *testing.T) {
 
 				chatToSave.Audit = append(chatToSave.Audit, entity2.ChatMessageStatusTime{
 					Status:     dto.DeliveredStatus,
-					ReceivedAt: fmt.Sprintf("%d", time.Now().Unix()),
+					ReceivedAt: time.Now().Unix(),
 				})
 
 				chatId, err := repository.PersistMessage(ctx, chatToSave)

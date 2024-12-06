@@ -24,18 +24,19 @@ const (
 )
 
 type WhatsAppJSONReceived struct {
-	Id            string              `json:"id,omitempty"`
-	MessageType   MessageType         `json:"messageType"`
-	Owner         WhatsAppPhoneIdDto  `json:"owner,omitempty"`
-	SenderPhoneId string              `json:"senderPhone,omitempty"`
-	Status        MessageStatus       `json:"status,omitempty"`
-	Metadata      WhatsAppMetadataDto `json:"metadata,omitempty"`
-	Active        bool                `json:"active"`
+	Id          string              `json:"id,omitempty"`
+	MessageType MessageType         `json:"messageType"`
+	Owner       WhatsAppPhoneIdDto  `json:"owner,omitempty"`
+	Sender      WhatsAppPhoneIdDto  `json:"sender,omitempty"`
+	Status      MessageStatus       `json:"status,omitempty"`
+	Metadata    WhatsAppMetadataDto `json:"metadata,omitempty"`
+	Active      bool                `json:"active"`
 }
 
 type WhatsAppPhoneIdDto struct {
-	PhoneNumberID      string `json:"phoneNumberId,omitempty"`
-	DisplayPhoneNumber string `json:"displayPhoneNumber,omitempty"`
+	PhoneNumberID string `json:"phoneNumberId,omitempty"`
+	// DisplayPhoneNumber string `json:"displayPhoneNumber,omitempty"`
+	ProfileName string `json:"profileName,omitempty"`
 }
 
 type WhatsAppMetadataDto struct {

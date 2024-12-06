@@ -22,7 +22,8 @@ type WhatsApp interface {
 var (
 	whatsAppOnce  sync.Once
 	whatsApp      *whatsAppGateway
-	graphAPIToken = "EAAP8VwxXKXkBOxZBYHG5pN2FCNORFZB57k0QIhHfVMA9tKzDR3SEV3kZAU22VjWYOTRHYuecwsZAsXK5s9tXZAVr9UacYD4yXV7fzREEgBwZBC7MuO5fYscR0ZCJjHIsWdy5NWaqiwZCSvlsEMNYufh7r47lyr3Lqso2OODMVLLRhmgOCfgwY2j8wFhlfxVwYwiTJnIwgA5wjU6w5OM6JpUxdLdR9wZDZD"
+	graphAPIToken = "EAAP8VwxXKXkBOZCAGZBXwMg96AWefXAxCGH4vNMQEYzvQ4KYH4B7NTE39c8A5nqFNTJPwOzZBh2ZAmrDoejTwZBhX4Q1jL7GgJnqVxutKbwUobFAspao8JecTZCeQtExCD9my2SPlznZCBt4KnrgIcJRR8UvX67ZCxZAr4xwvP57Eae8ad9zxW9xLjnJGaGDuYtRxTDZA7nPMsHpKsvxgUN5g8AjsQ"
+	// graphAPIToken = "1"
 )
 
 type whatsAppGateway struct {
