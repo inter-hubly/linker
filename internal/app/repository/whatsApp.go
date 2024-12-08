@@ -12,7 +12,7 @@ import (
 
 type WhatsApp interface {
 	PersistMessage(ctx context.Context, message *entity.Chat) (string, error)
-	SetStatusMessageById(ctx context.Context, messageId string, status dto.MessageStatus) error
+	SetStatusMessageById(ctx context.Context, messageId string, status dto.MessageStatus, expirationTime int64) error
 }
 
 var (
@@ -46,15 +46,21 @@ func (w *whatsAppRepository) SetStatusMessageById(
 	ctx context.Context,
 	messageId string,
 	status dto.MessageStatus,
+	expirationTime int64,
 ) error {
+
 	query := map[string]interface{}{
 		"script": map[string]interface{}{
-			"source": "ctx._source.status.add(params.new_status);",
+			"source": `
+            ctx._source.status.add(params.new_status); 
+            ctx._source.expiration_time = params.new_expiration_time;
+        `,
 			"params": map[string]interface{}{
 				"new_status": map[string]interface{}{
 					"status":     status,
 					"receivedAt": time.Now().Unix(),
 				},
+				"new_expiration_time": expirationTime,
 			},
 		},
 		"query": map[string]interface{}{

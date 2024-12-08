@@ -34,9 +34,9 @@ type WhatsAppJSONReceived struct {
 }
 
 type WhatsAppPhoneIdDto struct {
-	PhoneNumberID string `json:"phoneNumberId,omitempty"`
-	// DisplayPhoneNumber string `json:"displayPhoneNumber,omitempty"`
-	ProfileName string `json:"profileName,omitempty"`
+	PhoneNumberId string `json:"phoneNumberId"`
+	PhoneNumber   string `json:"phoneNumber,omitempty"`
+	ProfileName   string `json:"profileName,omitempty"`
 }
 
 type WhatsAppMetadataDto struct {

@@ -53,7 +53,7 @@ func (w *whatsAppMediator) StartTemplate(ctx context.Context, template *dtoWhats
 	chatDb.OwnerId = template.SenderAndReceiver.OwnerId
 	chatDb.Type = entity.ChatTemplate
 	chatDb.TemplateName = template.Name
-	chatDb.ToPhoneId = template.SenderAndReceiver.To
+	chatDb.ToPhone = template.SenderAndReceiver.To
 	chatDb.IsOwner = true
 
 	if err == nil {
@@ -78,9 +78,9 @@ func (w *whatsAppMediator) StartTemplate(ctx context.Context, template *dtoWhats
 
 func (w *whatsAppMediator) SendMessage(ctx context.Context, message *dtoWhats.WhatsAppJSONReceived) error {
 
-	messageToWhats := w.createTextMessage(ctx, message.Sender.PhoneNumberID, message.Metadata.Body)
+	messageToWhats := w.createTextMessage(ctx, message.Sender.PhoneNumberId, message.Metadata.Body)
 
-	whatsId, err := w.sendMessageToWhatsApp(ctx, message.Owner.PhoneNumberID, messageToWhats)
+	whatsId, err := w.sendMessageToWhatsApp(ctx, message.Owner.PhoneNumberId, messageToWhats)
 
 	if err != nil {
 		return err
@@ -97,8 +97,8 @@ func (w *whatsAppMediator) persistMessageInElastic(ctx context.Context, whatsId 
 	chat := entity.Chat{
 		MessageId: whatsId,
 		Type:      entity.ChatText,
-		OwnerId:   received.Owner.PhoneNumberID,
-		ToPhoneId: received.Sender.PhoneNumberID,
+		OwnerId:   received.Owner.PhoneNumberId,
+		ToPhone:   received.Sender.PhoneNumber,
 		Message:   received.Metadata.Body,
 		IsOwner:   true,
 		Audit: []entity.ChatMessageStatusTime{
@@ -123,9 +123,8 @@ func (w *whatsAppMediator) ReceiveMessage(ctx context.Context, received *dtoWhat
 	chat := entity.Chat{
 		Type:      entity.ChatText,
 		MessageId: received.Metadata.MessageId,
-		OwnerId:   received.Owner.PhoneNumberID,
-		ToPhoneId: received.Sender.PhoneNumberID,
-		ToPhone:   "+5548991784586",
+		OwnerId:   received.Owner.PhoneNumber,
+		ToPhone:   received.Sender.PhoneNumber,
 		Message:   received.Metadata.Body,
 		IsOwner:   false,
 	}
@@ -136,9 +135,9 @@ func (w *whatsAppMediator) ReceiveMessage(ctx context.Context, received *dtoWhat
 	}
 
 	go func() {
-		if err = w.pulseGateway.HandleMessage(ctx, received.Owner.PhoneNumberID, &dto.PulseDto{
+		if err = w.pulseGateway.HandleMessage(ctx, received.Owner.PhoneNumber, &dto.PulseDto{
 			Message:  received.Metadata.Body,
-			ToId:     received.Sender.PhoneNumberID,
+			ToId:     received.Sender.PhoneNumber,
 			Username: received.Sender.ProfileName,
 		}); err != nil {
 			hlog.Error("whatsAppMediator.ReceiveMessage", "error when persist message", err)

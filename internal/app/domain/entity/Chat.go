@@ -16,7 +16,6 @@ type Chat struct {
 	Type         ChatType                `json:"type"`
 	MessageId    string                  `json:"messageId,omitempty"`
 	OwnerId      string                  `json:"ownerId"`
-	ToPhoneId    string                  `json:"toPhoneId,omitempty"`
 	ToPhone      string                  `json:"toPhone,omitempty"`
 	TemplateName string                  `json:"templateName,omitempty"`
 	Message      string                  `json:"message,omitempty"`

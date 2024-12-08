@@ -11,29 +11,29 @@ import (
 
 	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
 	"github.com/inter-hubly/pilot/hlog"
+	"github.com/inter-hubly/pilot/server"
 )
 
 type WhatsApp interface {
-	GetAccessToken(ctx context.Context)
 	SendMessage(ctx context.Context, phoneNumberId string, message *dto.GatewayWhatsAppMessageDto) (*dto.ResponseWhatsAppGateway, error)
 	ReadyMessage(ctx context.Context, phoneNumberId, messageId string) error
 }
 
 var (
-	whatsAppOnce  sync.Once
-	whatsApp      *whatsAppGateway
-	graphAPIToken = "EAAP8VwxXKXkBOZCAGZBXwMg96AWefXAxCGH4vNMQEYzvQ4KYH4B7NTE39c8A5nqFNTJPwOzZBh2ZAmrDoejTwZBhX4Q1jL7GgJnqVxutKbwUobFAspao8JecTZCeQtExCD9my2SPlznZCBt4KnrgIcJRR8UvX67ZCxZAr4xwvP57Eae8ad9zxW9xLjnJGaGDuYtRxTDZA7nPMsHpKsvxgUN5g8AjsQ"
-	// graphAPIToken = "1"
+	whatsAppOnce sync.Once
+	whatsApp     *whatsAppGateway
 )
 
 type whatsAppGateway struct {
-	url string
+	url   string
+	token string
 }
 
 func NewWhatsApp() *whatsAppGateway {
 	whatsAppOnce.Do(func() {
 		whatsApp = &whatsAppGateway{
-			url: "https://graph.facebook.com/v21.0/",
+			url:   "https://graph.facebook.com/v21.0/",
+			token: server.GetEnvironment().WhatsAppToken,
 		}
 	})
 	return whatsApp
@@ -53,10 +53,6 @@ func (w *whatsAppGateway) SendMessage(
 		return nil, err
 	}
 	return res, nil
-}
-
-func (w *whatsAppGateway) GetAccessToken(ctx context.Context) {
-
 }
 
 func (w *whatsAppGateway) ReadyMessage(ctx context.Context, phoneNumberId, messageId string) error {
@@ -85,7 +81,7 @@ func (w *whatsAppGateway) makeRequest(method, url string, data any) (*dto.Respon
 	if err != nil {
 		return nil, fmt.Errorf("failed to create HTTP request: %w", err)
 	}
-	req.Header.Set("Authorization", "Bearer "+graphAPIToken)
+	req.Header.Set("Authorization", "Bearer "+w.token)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)

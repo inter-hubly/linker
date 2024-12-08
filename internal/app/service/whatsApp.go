@@ -46,14 +46,12 @@ func (w *whatsAppService) StartTemplate(ctx context.Context, template *dto.Start
 func (w *whatsAppService) SendMessage(ctx context.Context, template *dto.SendTextDto) error {
 	hlog.Debug("whatsAppService.SendMessage", fmt.Sprintf("%v", template))
 
-	// displayNumber := "15551817023"
 	message := dto.WhatsAppJSONReceived{
 		Owner: dto.WhatsAppPhoneIdDto{
-			PhoneNumberID: template.SenderAndReceiver.OwnerId,
-			// DisplayPhoneNumber: displayNumber,
+			PhoneNumberId: template.SenderAndReceiver.OwnerId,
 		},
 		Sender: dto.WhatsAppPhoneIdDto{
-			PhoneNumberID: template.SenderAndReceiver.To,
+			PhoneNumberId: template.SenderAndReceiver.To,
 		},
 		Metadata: dto.WhatsAppMetadataDto{
 			Body: template.Message,
@@ -75,7 +73,7 @@ func (w *whatsAppService) ReceiveMessage(ctx context.Context, dto *dto.WhatsAppJ
 func (w *whatsAppService) ChangeStatusMessage(ctx context.Context, message *dto.ChangeStatusDto) error {
 	hlog.Debug("whatsAppService.ChangeStatusMessage", fmt.Sprintf("%v", message))
 
-	if err := w.whatsappRepository.SetStatusMessageById(ctx, message.MessageId, message.Status); err != nil {
+	if err := w.whatsappRepository.SetStatusMessageById(ctx, message.MessageId, message.Status, message.ExpirationTimeStamp); err != nil {
 		return err
 	}
 	return nil

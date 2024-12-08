@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
-	entity2 "github.com/inter-hubly/linker/internal/app/domain/entity"
+	entity "github.com/inter-hubly/linker/internal/app/domain/entity"
 	"github.com/inter-hubly/linker/testutil"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
 	"github.com/inter-hubly/pilot/server"
@@ -49,7 +49,7 @@ func TestWhatsApp(t *testing.T) {
 			auxFunc: func() (string, error) {
 				chatToSave := testutil.GetChatToSave(testutil.NewWhatsAppMessage())
 
-				chatToSave.Audit = append(chatToSave.Audit, entity2.ChatMessageStatusTime{
+				chatToSave.Audit = append(chatToSave.Audit, entity.ChatMessageStatusTime{
 					Status:     dto.DeliveredStatus,
 					ReceivedAt: time.Now().Unix(),
 				})
@@ -61,7 +61,7 @@ func TestWhatsApp(t *testing.T) {
 			auxFunc: func() (string, error) {
 				chatToSave := testutil.GetChatToSave(testutil.NewWhatsAppMessage())
 
-				chatToSave.Audit = append(chatToSave.Audit, entity2.ChatMessageStatusTime{
+				chatToSave.Audit = append(chatToSave.Audit, entity.ChatMessageStatusTime{
 					Status:     dto.DeliveredStatus,
 					ReceivedAt: time.Now().Unix(),
 				})
