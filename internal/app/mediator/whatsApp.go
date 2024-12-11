@@ -123,7 +123,7 @@ func (w *whatsAppMediator) ReceiveMessage(ctx context.Context, received *dtoWhat
 	chat := entity.Chat{
 		Type:      entity.ChatText,
 		MessageId: received.Metadata.MessageId,
-		OwnerId:   received.Owner.PhoneNumber,
+		OwnerId:   received.Owner.PhoneNumberId,
 		ToPhone:   received.Sender.PhoneNumber,
 		Message:   received.Metadata.Body,
 		IsOwner:   false,
@@ -134,15 +134,14 @@ func (w *whatsAppMediator) ReceiveMessage(ctx context.Context, received *dtoWhat
 		return err
 	}
 
-	go func() {
-		if err = w.pulseGateway.HandleMessage(ctx, received.Owner.PhoneNumber, &dto.PulseDto{
-			Message:  received.Metadata.Body,
-			ToId:     received.Sender.PhoneNumber,
-			Username: received.Sender.ProfileName,
+	go func(entityChat *entity.Chat) {
+		if err = w.pulseGateway.HandleMessage(ctx, received.Owner.PhoneNumberId, &dto.PulseDto{
+			Message:  entityChat.Message,
+			ToNumber: entityChat.ToPhone,
 		}); err != nil {
 			hlog.Error("whatsAppMediator.ReceiveMessage", "error when persist message", err)
 		}
-	}()
+	}(&chat)
 
 	return nil
 }

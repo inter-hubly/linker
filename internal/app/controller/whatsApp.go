@@ -73,6 +73,10 @@ func (w *whatsAppController) SendMessage() {
 			hlog.Error("whatsAppController.SendMessage", "Message can't be empty")
 			return
 		}
+		if sentText.SenderAndReceiver.To != "" {
+			hlog.Error("whatsAppController.SendMessage", "Sender and Receiver can't be empty")
+			return
+		}
 		w.whatsAppService.SendMessage(ctx, &sentText)
 	})
 }

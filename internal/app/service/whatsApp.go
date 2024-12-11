@@ -26,6 +26,7 @@ var (
 type whatsAppService struct {
 	whatsappMediator   mediator.WhatsApp
 	whatsappRepository repository.WhatsApp
+	clientRepository   repository.Client
 }
 
 func NewWhatsApp() *whatsAppService {
@@ -33,6 +34,7 @@ func NewWhatsApp() *whatsAppService {
 		whatsApp = &whatsAppService{
 			whatsappMediator:   mediator.NewWhatsApp(),
 			whatsappRepository: repository.NewWhatsApp(),
+			clientRepository:   repository.NewClient(),
 		}
 	})
 	return whatsApp
@@ -63,6 +65,12 @@ func (w *whatsAppService) SendMessage(ctx context.Context, template *dto.SendTex
 
 func (w *whatsAppService) ReceiveMessage(ctx context.Context, dto *dto.WhatsAppJSONReceived) error {
 	hlog.Debug("whatsAppService.ReceiveMessage", fmt.Sprintf("%v", dto))
+	id, err := w.clientRepository.GetClientByPhoneId(ctx, dto.Sender.PhoneNumberId)
+	if err != nil {
+		hlog.Error("whatsAppService.ReceiveMessage", fmt.Sprintf("error geting number %s", dto.Sender.PhoneNumberId))
+		return err
+	}
+	dto.Sender.PhoneNumber = id
 	if err := w.whatsappMediator.ReceiveMessage(ctx, dto); err != nil {
 		return err
 	}
