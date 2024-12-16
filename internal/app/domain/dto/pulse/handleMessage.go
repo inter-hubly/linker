@@ -1,7 +1,6 @@
 package dto
 
 type PulseDto struct {
-	Username string `json:"username"`
-	Message  string `json:"message"`
-	ToNumber string `json:"toNumber"`
+	Message string `json:"message"`
+	ToPhone string `json:"toPhone"`
 }
