@@ -35,6 +35,10 @@ func NewWhatsApp() *whatsAppRepository {
 }
 
 func (w *whatsAppRepository) PersistMessage(ctx context.Context, message *entity.Chat) (string, error) {
+	now := time.Now()
+	message.CreatedAt = now
+	message.UpdatedAt = now
+
 	res, err := w.elastic.Create(ctx, elasticIndex, message)
 	if err != nil {
 		return "", err
@@ -49,18 +53,21 @@ func (w *whatsAppRepository) SetStatusMessageById(
 	expirationTime int64,
 ) error {
 
+	now := time.Now()
 	query := map[string]interface{}{
 		"script": map[string]interface{}{
 			"source": `
             ctx._source.status.add(params.new_status); 
             ctx._source.expiration_time = params.new_expiration_time;
+            ctx._source.updatedAt = params.updatedAt;
         `,
 			"params": map[string]interface{}{
 				"new_status": map[string]interface{}{
 					"status":     status,
-					"receivedAt": time.Now().Unix(),
+					"receivedAt": now.Unix(),
 				},
 				"new_expiration_time": expirationTime,
+				"updatedAt":           now,
 			},
 		},
 		"query": map[string]interface{}{

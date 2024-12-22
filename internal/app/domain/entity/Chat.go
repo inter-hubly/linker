@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"time"
+
 	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
 )
 
@@ -20,6 +22,8 @@ type Chat struct {
 	TemplateName string                  `json:"templateName,omitempty"`
 	Message      string                  `json:"message,omitempty"`
 	IsOwner      bool                    `json:"isOwner"`
+	CreatedAt    time.Time               `json:"createdAt,omitempty"`
+	UpdatedAt    time.Time               `json:"updatedAt,omitempty"`
 }
 
 type ChatMessageStatusTime struct {
