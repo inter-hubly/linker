@@ -53,7 +53,7 @@ func (w *whatsAppService) SendMessage(ctx context.Context, template *dto.SendTex
 			PhoneNumberId: template.SenderAndReceiver.OwnerId,
 		},
 		Sender: dto.WhatsAppPhoneIdDto{
-			PhoneNumberId: template.SenderAndReceiver.To,
+			PhoneNumber: template.SenderAndReceiver.To,
 		},
 		Metadata: dto.WhatsAppMetadataDto{
 			Body: template.Message,
@@ -65,12 +65,12 @@ func (w *whatsAppService) SendMessage(ctx context.Context, template *dto.SendTex
 
 func (w *whatsAppService) ReceiveMessage(ctx context.Context, dto *dto.WhatsAppJSONReceived) error {
 	hlog.Debug("whatsAppService.ReceiveMessage", fmt.Sprintf("%v", dto))
-	id, err := w.clientRepository.GetClientByPhoneId(ctx, dto.Sender.PhoneNumberId)
+	clientWhatsAppId, err := w.clientRepository.GetClientByPhoneId(ctx, dto.Sender.PhoneNumberId)
 	if err != nil {
 		hlog.Error("whatsAppService.ReceiveMessage", fmt.Sprintf("error geting number %s", dto.Sender.PhoneNumberId))
 		return err
 	}
-	dto.Sender.PhoneNumber = id
+	dto.Sender.PhoneNumber = clientWhatsAppId
 	if err := w.whatsappMediator.ReceiveMessage(ctx, dto); err != nil {
 		return err
 	}

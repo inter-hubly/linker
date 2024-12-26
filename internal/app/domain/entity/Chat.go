@@ -17,6 +17,7 @@ type Chat struct {
 	Audit        []ChatMessageStatusTime `json:"status,omitempty"`
 	Type         ChatType                `json:"type"`
 	MessageId    string                  `json:"messageId,omitempty"`
+	ProfileName  string                  `json:"profileName,omitempty"`
 	OwnerId      string                  `json:"ownerId"`
 	ToPhone      string                  `json:"toPhone,omitempty"`
 	TemplateName string                  `json:"templateName,omitempty"`

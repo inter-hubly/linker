@@ -78,7 +78,7 @@ func (w *whatsAppMediator) StartTemplate(ctx context.Context, template *dtoWhats
 
 func (w *whatsAppMediator) SendMessage(ctx context.Context, message *dtoWhats.WhatsAppJSONReceived) error {
 
-	messageToWhats := w.createTextMessage(ctx, message.Sender.PhoneNumberId, message.Metadata.Body)
+	messageToWhats := w.createTextMessage(ctx, message.Sender.PhoneNumber, message.Metadata.Body)
 
 	whatsId, err := w.sendMessageToWhatsApp(ctx, message.Owner.PhoneNumberId, messageToWhats)
 
@@ -121,12 +121,13 @@ func (w *whatsAppMediator) persistMessageInElastic(ctx context.Context, whatsId 
 func (w *whatsAppMediator) ReceiveMessage(ctx context.Context, received *dtoWhats.WhatsAppJSONReceived) error {
 
 	chat := entity.Chat{
-		Type:      entity.ChatText,
-		MessageId: received.Metadata.MessageId,
-		OwnerId:   received.Owner.PhoneNumberId,
-		ToPhone:   received.Sender.PhoneNumber,
-		Message:   received.Metadata.Body,
-		IsOwner:   false,
+		Type:        entity.ChatText,
+		MessageId:   received.Metadata.MessageId,
+		OwnerId:     received.Owner.PhoneNumberId,
+		ToPhone:     received.Sender.PhoneNumber,
+		Message:     received.Metadata.Body,
+		ProfileName: received.Sender.ProfileName,
+		IsOwner:     false,
 	}
 	_, err := w.whatsAppRepository.PersistMessage(ctx, &chat)
 
