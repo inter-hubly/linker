@@ -1,8 +1,7 @@
 config:
   env: development
   port: 8081
-  
-  whatsAppToken: EAAP8VwxXKXkBO8hEtyWxZCZAFxyYbJq8WAYKpV7YgHhB1q3CMJk0NnFlMzZBOvsricjyHtxvO6ZBjPlngdGMbG2ZCUA44d1FQ3FKdhfdAJ1uwYDmgEWbxoAV7xROcCZADQTMRznK7UVUZBMwYcwuLFEvnsv7RWv4CDsulpTZBF3JeWz5lpx3A2paB4bAeZBuu1XFHBPyGPgJD4FunNHwa3mSSQ9my
+  whatsAppToken: EAAP8VwxXKXkBO3WJuZAX2ZBsW2mVzBAHqG7gb38x2fIgd3ydReFv6VVNRZBGnZBsmhOt8CF7R9msJgPSprnjS7dM7g6XQdfvo50dguTVp6NxZAzC6JX5SvDqqBv3CpHX39O1uEAkkCdBrbwE4NKbCBHKVNOC7dtc2OSFQWSnIx2HUbvCTFFbg3lXxFt3j4PQZA
 elasticSearch:
   host: http://localhost:9200
 redis:
