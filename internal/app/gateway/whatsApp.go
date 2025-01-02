@@ -11,7 +11,7 @@ import (
 
 	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
 	"github.com/inter-hubly/pilot/hlog"
-	"github.com/inter-hubly/pilot/server"
+	"github.com/inter-hubly/pilot/hrest"
 )
 
 type WhatsApp interface {
@@ -25,34 +25,51 @@ var (
 )
 
 type whatsAppGateway struct {
-	url   string
-	token string
+	url           string
+	keeperGateway Keeper
 }
 
 func NewWhatsApp() *whatsAppGateway {
 	whatsAppOnce.Do(func() {
 		whatsApp = &whatsAppGateway{
-			url:   "https://graph.facebook.com/v21.0/",
-			token: server.GetEnvironment().WhatsAppToken,
+			url:           "https://graph.facebook.com/v21.0/",
+			keeperGateway: NewKeeper(),
 		}
 	})
 	return whatsApp
 }
 
 func (w *whatsAppGateway) SendMessage(
-	_ context.Context,
+	ctx context.Context,
 	phoneNumberId string,
 	messageDto *dto.GatewayWhatsAppMessageDto,
 ) (*dto.ResponseWhatsAppGateway, error) {
 	hlog.Debug("whatsAppGateway.SendMessage", fmt.Sprintf("Send Message %v", messageDto))
-	res, err := w.makeRequest(http.MethodPost, fmt.Sprintf("%s%s/messages", w.url, phoneNumberId), messageDto)
 
-	// TODO testar
+	client, err := w.keeperGateway.GetClientByPhoneNumberId(ctx, phoneNumberId)
 	if err != nil {
+		return nil, err
+	}
+
+	request := hrest.NewRequest(fmt.Sprintf("%s%s/messages", w.url, phoneNumberId),
+		hrest.WithHeader([]hrest.Pair[string, string]{
+			{"Content-Type", "application/json"},
+			{"Authorization", "Bearer " + client.AccessToken},
+		}),
+		hrest.WithBody(messageDto),
+	)
+
+	if err = request.CreateRequest(ctx, http.MethodPost); err != nil {
 		hlog.Error("whatsAppGateway.SendMessage", fmt.Sprintf("Failed to send message %v", messageDto))
 		return nil, err
 	}
-	return res, nil
+
+	var resp *dto.ResponseWhatsAppGateway
+	if err = request.GetBody(resp); err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 func (w *whatsAppGateway) ReadyMessage(ctx context.Context, phoneNumberId, messageId string) error {
@@ -62,6 +79,7 @@ func (w *whatsAppGateway) ReadyMessage(ctx context.Context, phoneNumberId, messa
 		"message_id":        messageId,
 	}
 	if _, err := w.makeRequest(
+		ctx,
 		http.MethodPost,
 		fmt.Sprintf("%s%s/messages", w.url, phoneNumberId),
 		data,
@@ -71,7 +89,7 @@ func (w *whatsAppGateway) ReadyMessage(ctx context.Context, phoneNumberId, messa
 	return nil
 }
 
-func (w *whatsAppGateway) makeRequest(method, url string, data any) (*dto.ResponseWhatsAppGateway, error) {
+func (w *whatsAppGateway) makeRequest(ctx context.Context, method, url string, data any) (*dto.ResponseWhatsAppGateway, error) {
 	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request body: %w", err)
@@ -81,7 +99,7 @@ func (w *whatsAppGateway) makeRequest(method, url string, data any) (*dto.Respon
 	if err != nil {
 		return nil, fmt.Errorf("failed to create HTTP request: %w", err)
 	}
-	req.Header.Set("Authorization", "Bearer "+w.token)
+	req.Header.Set("Authorization", "Bearer "+" w.token")
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)

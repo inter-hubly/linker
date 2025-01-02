@@ -10,10 +10,10 @@ import (
 func GetMessageTest() *dto.WhatsAppJSONReceived {
 	return &dto.WhatsAppJSONReceived{
 		Owner: dto.WhatsAppPhoneIdDto{
-			PhoneNumber: "515719138282305",
+			PhoneNumberId: "559153210606318",
 		},
 		Sender: dto.WhatsAppPhoneIdDto{
-			PhoneNumber: "554891784586",
+			PhoneNumberId: "554891784586",
 		},
 		Metadata: dto.WhatsAppMetadataDto{
 			Body: "Mensagem teste do aplicativo",
@@ -57,7 +57,7 @@ func StartMessage() ([]byte, error) {
 func GetChatToSave(e *dto.WhatsAppJSONReceived) *entity.Chat {
 	return &entity.Chat{
 		MessageId: e.Metadata.MessageId,
-		OwnerId:   e.Owner.PhoneNumber,
+		OwnerId:   e.Owner.PhoneNumberId,
 		Message:   "",
 	}
 }
@@ -67,11 +67,11 @@ func NewWhatsAppMessage() *dto.WhatsAppJSONReceived {
 		Id:     "123456",
 		Active: true,
 		Owner: dto.WhatsAppPhoneIdDto{
-			PhoneNumber: "515719138282305",
+			PhoneNumberId: "515719138282305",
 		},
 		Status: dto.DeliveredStatus,
 		Sender: dto.WhatsAppPhoneIdDto{
-			PhoneNumber: "554891784586",
+			PhoneNumberId: "554891784586",
 		},
 		Metadata: dto.WhatsAppMetadataDto{
 			ExpirationTimeStamp: "1732814400",

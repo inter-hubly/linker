@@ -15,20 +15,22 @@ type WhatsApp interface {
 	SetStatusMessageById(ctx context.Context, messageId string, status dto.MessageStatus, expirationTime int64) error
 }
 
-var (
-	whatsAppOnce sync.Once
-	whatsApp     *whatsAppRepository
-	elasticIndex = "whatsapp.ready"
-)
-
 type whatsAppRepository struct {
 	elastic elasticsearch.ElasticConn
+	index   string
 }
 
 func NewWhatsApp() *whatsAppRepository {
+
+	var (
+		whatsAppOnce sync.Once
+		whatsApp     *whatsAppRepository
+	)
+
 	whatsAppOnce.Do(func() {
 		whatsApp = &whatsAppRepository{
 			elastic: elasticsearch.GetConnection(),
+			index:   "whatsapp.ready",
 		}
 	})
 	return whatsApp
@@ -39,7 +41,7 @@ func (w *whatsAppRepository) PersistMessage(ctx context.Context, message *entity
 	message.CreatedAt = now
 	message.UpdatedAt = now
 
-	res, err := w.elastic.Create(ctx, elasticIndex, message)
+	res, err := w.elastic.Create(ctx, w.index, message)
 	if err != nil {
 		return "", err
 	}
@@ -82,7 +84,7 @@ func (w *whatsAppRepository) SetStatusMessageById(
 			},
 		},
 	}
-	_, err := w.elastic.Update(ctx, elasticIndex, query)
+	_, err := w.elastic.Update(ctx, w.index, query)
 	if err != nil {
 		return err
 	}

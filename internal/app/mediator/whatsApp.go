@@ -53,7 +53,7 @@ func (w *whatsAppMediator) StartTemplate(ctx context.Context, template *dtoWhats
 	chatDb.OwnerId = template.SenderAndReceiver.OwnerId
 	chatDb.Type = entity.ChatTemplate
 	chatDb.TemplateName = template.Name
-	chatDb.ToPhone = template.SenderAndReceiver.To
+	chatDb.ToPhoneId = template.SenderAndReceiver.To
 	chatDb.IsOwner = true
 
 	if err == nil {
@@ -78,7 +78,7 @@ func (w *whatsAppMediator) StartTemplate(ctx context.Context, template *dtoWhats
 
 func (w *whatsAppMediator) SendMessage(ctx context.Context, message *dtoWhats.WhatsAppJSONReceived) error {
 
-	messageToWhats := w.createTextMessage(ctx, message.Sender.PhoneNumber, message.Metadata.Body)
+	messageToWhats := w.createTextMessage(ctx, message.Sender.PhoneNumberId, message.Metadata.Body)
 
 	whatsId, err := w.sendMessageToWhatsApp(ctx, message.Owner.PhoneNumberId, messageToWhats)
 
@@ -98,7 +98,7 @@ func (w *whatsAppMediator) persistMessageInElastic(ctx context.Context, whatsId 
 		MessageId: whatsId,
 		Type:      entity.ChatText,
 		OwnerId:   received.Owner.PhoneNumberId,
-		ToPhone:   received.Sender.PhoneNumber,
+		ToPhoneId: received.Sender.PhoneNumberId,
 		Message:   received.Metadata.Body,
 		IsOwner:   true,
 		Audit: []entity.ChatMessageStatusTime{
@@ -124,7 +124,7 @@ func (w *whatsAppMediator) ReceiveMessage(ctx context.Context, received *dtoWhat
 		Type:        entity.ChatText,
 		MessageId:   received.Metadata.MessageId,
 		OwnerId:     received.Owner.PhoneNumberId,
-		ToPhone:     received.Sender.PhoneNumber,
+		ToPhoneId:   received.Sender.PhoneNumberId,
 		Message:     received.Metadata.Body,
 		ProfileName: received.Sender.ProfileName,
 		IsOwner:     false,
@@ -138,7 +138,7 @@ func (w *whatsAppMediator) ReceiveMessage(ctx context.Context, received *dtoWhat
 	go func(entityChat *entity.Chat) {
 		if err = w.pulseGateway.HandleMessage(ctx, received.Owner.PhoneNumberId, &dto.PulseDto{
 			Message: entityChat.Message,
-			ToPhone: entityChat.ToPhone,
+			ToPhone: entityChat.ToPhoneId,
 		}); err != nil {
 			hlog.Error("whatsAppMediator.ReceiveMessage", "error when persist message", err)
 		}

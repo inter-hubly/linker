@@ -18,7 +18,7 @@ func TestWhatsAppGateway(t *testing.T) {
 		messageDto := dto2.GatewayWhatsAppMessageDto{
 			MessagingProduct: "whatsapp",
 			RecipientType:    "individual",
-			To:               messageTest.SenderPhoneId,
+			To:               messageTest.Sender.PhoneNumberId,
 			Type:             "text",
 			Text: &dto2.WhatsAppTextDto{
 				PreviewUrl: true,
@@ -26,7 +26,7 @@ func TestWhatsAppGateway(t *testing.T) {
 			},
 		}
 
-		_, err := app.SendMessage(ctx, messageTest.Owner.PhoneNumberID, &messageDto)
+		_, err := app.SendMessage(ctx, messageTest.Owner.PhoneNumberId, &messageDto)
 		assert.Nil(t, err)
 	})
 }

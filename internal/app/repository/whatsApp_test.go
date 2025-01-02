@@ -70,7 +70,7 @@ func TestWhatsApp(t *testing.T) {
 				assert.Nil(t, err)
 				assert.NotEmpty(t, chatId)
 
-				err = repository.SetStatusMessageById(ctx, chatToSave.MessageId, dto.SentStatus)
+				err = repository.SetStatusMessageById(ctx, chatToSave.MessageId, dto.SentStatus, 0)
 				assert.Nil(t, err)
 
 				resp, err := repository.elastic.FindById(ctx, "whatsapp.ready", chatId)

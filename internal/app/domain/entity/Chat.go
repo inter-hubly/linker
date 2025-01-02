@@ -19,7 +19,7 @@ type Chat struct {
 	MessageId    string                  `json:"messageId,omitempty"`
 	ProfileName  string                  `json:"profileName,omitempty"`
 	OwnerId      string                  `json:"ownerId"`
-	ToPhone      string                  `json:"toPhone,omitempty"`
+	ToPhoneId    string                  `json:"toPhoneId,omitempty"`
 	TemplateName string                  `json:"templateName,omitempty"`
 	Message      string                  `json:"message,omitempty"`
 	IsOwner      bool                    `json:"isOwner"`
