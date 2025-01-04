@@ -137,8 +137,9 @@ func (w *whatsAppMediator) ReceiveMessage(ctx context.Context, received *dtoWhat
 
 	go func(entityChat *entity.Chat) {
 		if err = w.pulseGateway.HandleMessage(ctx, received.Owner.PhoneNumberId, &dto.PulseDto{
-			Message: entityChat.Message,
-			ToPhone: entityChat.ToPhoneId,
+			Message:     entityChat.Message,
+			ToPhone:     entityChat.ToPhoneId,
+			ProfileName: entityChat.ProfileName,
 		}); err != nil {
 			hlog.Error("whatsAppMediator.ReceiveMessage", "error when persist message", err)
 		}
