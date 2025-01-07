@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/app/repository"
 	"github.com/inter-hubly/pilot/hlog"
 	"github.com/inter-hubly/pilot/hrest"
 )
@@ -25,15 +26,15 @@ var (
 )
 
 type whatsAppGateway struct {
-	url           string
-	keeperGateway Keeper
+	url              string
+	clientRepository repository.Client
 }
 
 func NewWhatsApp() *whatsAppGateway {
 	whatsAppOnce.Do(func() {
 		whatsApp = &whatsAppGateway{
-			url:           "https://graph.facebook.com/v21.0/",
-			keeperGateway: NewKeeper(),
+			url:              "https://graph.facebook.com/v21.0/",
+			clientRepository: repository.NewClient(),
 		}
 	})
 	return whatsApp
@@ -46,7 +47,7 @@ func (w *whatsAppGateway) SendMessage(
 ) (*dto.ResponseWhatsAppGateway, error) {
 	hlog.Debug("whatsAppGateway.SendMessage", fmt.Sprintf("Send Message %v", messageDto))
 
-	client, err := w.keeperGateway.GetClientByPhoneNumberId(ctx, phoneNumberId)
+	client, err := w.clientRepository.GetClientById(ctx, phoneNumberId)
 	if err != nil {
 		return nil, err
 	}

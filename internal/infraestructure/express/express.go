@@ -4,6 +4,7 @@ import (
 	"github.com/inter-hubly/linker/internal/app/controller"
 	rabbitmq "github.com/inter-hubly/pilot/broker"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
+	"github.com/inter-hubly/pilot/database/pgsql"
 	"github.com/inter-hubly/pilot/server"
 )
 
@@ -23,6 +24,18 @@ func Start() {
 		); err != nil {
 		panic(err)
 	}
+
+	elasticsearch.NewConn(
+		elasticsearch.WithUrl([]string{server.GetElasticSearch().Host}),
+		elasticsearch.WithUsernameAndPassword(
+			server.GetElasticSearch().Username,
+			server.GetElasticSearch().Password,
+		),
+	)
+
+	pgsql.NewConnection(
+		pgsql.WithUrl(server.GetPgsqlConfig().Host),
+	)
 
 	elasticsearch.NewConn(
 		elasticsearch.WithUrl([]string{server.GetElasticSearch().Host}),

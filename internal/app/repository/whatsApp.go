@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -30,7 +31,7 @@ func NewWhatsApp() *whatsAppRepository {
 	whatsAppOnce.Do(func() {
 		whatsApp = &whatsAppRepository{
 			elastic: elasticsearch.GetConnection(),
-			index:   "whatsapp.ready",
+			index:   "whatsapp",
 		}
 	})
 	return whatsApp
@@ -41,7 +42,7 @@ func (w *whatsAppRepository) PersistMessage(ctx context.Context, message *entity
 	message.CreatedAt = now
 	message.UpdatedAt = now
 
-	res, err := w.elastic.Create(ctx, w.index, message)
+	res, err := w.elastic.Create(ctx, fmt.Sprintf("%s.%s", message.OwnerId, w.index), message)
 	if err != nil {
 		return "", err
 	}
