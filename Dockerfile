@@ -39,6 +39,5 @@ ARG ENVIRONMENT
 LABEL maintainer="linker"
 WORKDIR /app
 COPY --from=builder /app/linker /app
-COPY --from=builder /app/config.${ENVIRONMENT}.yaml /app
 ENTRYPOINT ./linker
 
