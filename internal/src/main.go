@@ -8,7 +8,7 @@ import (
 func main() {
 	// server was start with 'ENVIRONMENT' in tools argument
 	server.FillConfigEnvironment()
-
 	express.Start()
+
 	select {}
 }

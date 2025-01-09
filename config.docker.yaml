@@ -8,6 +8,6 @@ redis:
   host: localhost:6379
   database: 0
 ampq:
-  host: amqp://guest:guest@localhost:5672/
+  host: amqp://guest:guest@rabbitmq:5672/
 pgsql:
-  host: postgres://postgres:frajolinha202@localhost:5431/hubly
+  host: postgres://postgres:postgres@postgres:5432/hubly

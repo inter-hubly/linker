@@ -12,7 +12,7 @@ const ExchangeBroker = "linker"
 
 func Start() {
 
-	rabbitmq.NewRabbitMQ(ExchangeBroker, "topic")
+	rabbitmq.NewRabbitMQ(ExchangeBroker, "topic", rabbitmq.WithURL(server.GetAmpqConfig().Host))
 
 	if err := rabbitmq.GetConnection().
 		QueueBind(
