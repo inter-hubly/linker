@@ -20,6 +20,7 @@ RUN git config --global url.ssh://git@github.com/.insteadOf https://github.com/
 
 ENV GOPRIVATE=github.com/inter-hubly/*
 
+ENV ENVIRONMENT_HOSTNAME=linker
 ENV ENVIRONMENT=${ENVIRONMENT}
 ENV ENVIRONMENT_PORT=${ENVIRONMENT_PORT}
 ENV ENVIRONMENT_APPID=${ENVIRONMENT_APPID}
