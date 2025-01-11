@@ -7,7 +7,7 @@ go 1.23.1
 
 require (
 	github.com/golang/mock v1.6.0
-	github.com/inter-hubly/pilot v0.0.3
+	github.com/inter-hubly/pilot v0.0.5
 	github.com/streadway/amqp v1.1.0
 	github.com/stretchr/testify v1.9.0
 )

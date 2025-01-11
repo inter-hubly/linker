@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	dto "github.com/inter-hubly/linker/internal/app/domain/dto/pulse"
+	"github.com/inter-hubly/pilot/server"
 )
 
 type Pulse interface {
@@ -27,7 +28,7 @@ type pulseGateway struct {
 func NewPulse() *pulseGateway {
 	pulseOnce.Do(func() {
 		pulse = &pulseGateway{
-			url: "http://localhost:8082",
+			url: server.GetGatewayHost().PulseHost,
 		}
 	})
 	return pulse

@@ -9,6 +9,7 @@ import (
 	"github.com/inter-hubly/pilot/domain/valueobject"
 	"github.com/inter-hubly/pilot/hlog"
 	"github.com/inter-hubly/pilot/hrest"
+	"github.com/inter-hubly/pilot/server"
 )
 
 type Keeper interface {
@@ -28,7 +29,7 @@ func NewKeeper() *keeperGateway {
 
 	keeperOnce.Do(func() {
 		keeper = &keeperGateway{
-			url: "http://localhost:8081",
+			url: server.GetGatewayHost().KeeperHost,
 		}
 	})
 	return keeper
