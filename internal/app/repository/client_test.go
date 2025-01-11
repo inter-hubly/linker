@@ -17,7 +17,7 @@ func TestClient(t *testing.T) {
 	defer ctrl.Finish()
 	keeper := gateway.NewMockKeeper(ctrl)
 	client := clientRepository{
-		keeperGateway: keeper,
+		// connection: keeper,
 	}
 	returnedValue := &valueobject.Client{
 		Id:            1,

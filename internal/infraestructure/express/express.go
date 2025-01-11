@@ -1,6 +1,8 @@
 package express
 
 import (
+	"context"
+
 	"github.com/inter-hubly/linker/internal/app/controller"
 	rabbitmq "github.com/inter-hubly/pilot/broker"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
@@ -10,12 +12,13 @@ import (
 
 const ExchangeBroker = "linker"
 
-func Start() {
+func Start(ctx context.Context) {
 
-	rabbitmq.NewRabbitMQ(ExchangeBroker, "topic", rabbitmq.WithURL(server.GetAmpqConfig().Host))
+	rabbitmq.NewRabbitMQ(ctx, ExchangeBroker, "topic", rabbitmq.WithURL(server.GetAmpqConfig().Host))
 
 	if err := rabbitmq.GetConnection().
 		QueueBind(
+			ctx,
 			rabbitmq.NewQueueBinding("whatsapp.start", "whatsapp.start", ExchangeBroker),
 			rabbitmq.NewQueueBinding("whatsapp.statuses", "whatsapp.statuses", ExchangeBroker),
 			rabbitmq.NewQueueBinding("whatsapp.message", "whatsapp.message", ExchangeBroker),
@@ -45,5 +48,5 @@ func Start() {
 		),
 	)
 
-	controller.NewWhatsApp()
+	controller.NewWhatsApp(ctx)
 }

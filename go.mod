@@ -3,11 +3,11 @@ module github.com/inter-hubly/linker
 go 1.23.1
 
 //replace github.com/inter-hubly/pilot => /Users/saimonribeirosilva/Hubly/pilot // Mac
-//replace github.com/inter-hubly/pilot => /home/saimon/Documents/Hubly/pilot //Linux
+replace github.com/inter-hubly/pilot => /home/saimon/Documents/Hubly/pilot //Linux
 
 require (
 	github.com/golang/mock v1.6.0
-	github.com/inter-hubly/pilot v0.0.5
+	github.com/inter-hubly/pilot v0.0.7
 	github.com/streadway/amqp v1.1.0
 	github.com/stretchr/testify v1.9.0
 )

@@ -37,7 +37,7 @@ func NewClient() *clientRepository {
 }
 
 func (r *clientRepository) GetClientById(ctx context.Context, clientId string) (*valueobject.Client, error) {
-	hlog.Debug("clientRepository.GetClientById", "GetClientById", clientId)
+	hlog.Debug(ctx, "clientRepository.GetClientById", fmt.Sprint("GetClientById", clientId))
 	if client, ok := clients[clientId]; ok {
 		return client, nil
 	}
@@ -47,7 +47,7 @@ func (r *clientRepository) GetClientById(ctx context.Context, clientId string) (
 
 	queryExec, err := r.connection.Query(query, clientId)
 	if err != nil {
-		hlog.Error("clientRepository.GetClientById", fmt.Sprintf("error find clientId %s : %s", clientId, err))
+		hlog.Error(ctx, "clientRepository.GetClientById", fmt.Sprintf("error find clientId %s : %s", clientId, err))
 		return nil, err
 	}
 	var clientDb valueobject.Client
@@ -60,7 +60,7 @@ func (r *clientRepository) GetClientById(ctx context.Context, clientId string) (
 		&clientDb.BusinessId,
 		&clientDb.AccessToken,
 	); err != nil {
-		hlog.Error("clientRepository.GetClientById", fmt.Sprintf("error scan clientId %s : %s", clientId, err))
+		hlog.Error(ctx, "clientRepository.GetClientById", fmt.Sprintf("error scan clientId %s : %s", clientId, err))
 		return nil, err
 	}
 	return &clientDb, nil

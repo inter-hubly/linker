@@ -39,12 +39,12 @@ func NewWhatsApp() *whatsAppService {
 }
 
 func (w *whatsAppService) StartTemplate(ctx context.Context, template *dto.StartTemplateDto) error {
-	hlog.Debug("whatsAppService.StartTemplate", fmt.Sprintf("%v", template))
+	hlog.Debug(ctx, "whatsAppService.StartTemplate", fmt.Sprintf("%v", template))
 	return w.whatsappMediator.StartTemplate(ctx, template)
 }
 
 func (w *whatsAppService) SendMessage(ctx context.Context, template *dto.SendTextDto) error {
-	hlog.Debug("whatsAppService.SendMessage", fmt.Sprintf("%v", template))
+	hlog.Debug(ctx, "whatsAppService.SendMessage", fmt.Sprintf("%v", template))
 
 	message := dto.WhatsAppJSONReceived{
 		Owner: dto.WhatsAppPhoneIdDto{
@@ -62,7 +62,7 @@ func (w *whatsAppService) SendMessage(ctx context.Context, template *dto.SendTex
 }
 
 func (w *whatsAppService) ReceiveMessage(ctx context.Context, dto *dto.WhatsAppJSONReceived) error {
-	hlog.Debug("whatsAppService.ReceiveMessage", fmt.Sprintf("%v", dto))
+	hlog.Debug(ctx, "whatsAppService.ReceiveMessage", fmt.Sprintf("%v", dto))
 
 	if err := w.whatsappMediator.ReceiveMessage(ctx, dto); err != nil {
 		return err
@@ -72,7 +72,7 @@ func (w *whatsAppService) ReceiveMessage(ctx context.Context, dto *dto.WhatsAppJ
 }
 
 func (w *whatsAppService) ChangeStatusMessage(ctx context.Context, message *dto.ChangeStatusDto) error {
-	hlog.Debug("whatsAppService.ChangeStatusMessage", fmt.Sprintf("%v", message))
+	hlog.Debug(ctx, "whatsAppService.ChangeStatusMessage", fmt.Sprintf("%v", message))
 
 	if err := w.whatsappRepository.SetStatusMessageById(ctx, message.MessageId, message.Status, message.ExpirationTimeStamp); err != nil {
 		return err

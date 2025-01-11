@@ -36,7 +36,7 @@ func NewKeeper() *keeperGateway {
 }
 
 func (k *keeperGateway) GetClientByPhoneNumberId(ctx context.Context, phoneNumberId string) (*valueobject.Client, error) {
-	hlog.Debug("keeperGateway.GetClientByPhoneNumberId", "PhoneNumberId", phoneNumberId)
+	hlog.Debug(ctx, "keeperGateway.GetClientByPhoneNumberId", fmt.Sprintf("PhoneNumberId: %s", phoneNumberId))
 	request := hrest.NewRequest(fmt.Sprintf("%s/api/client/%s/phone-number-id", k.url, phoneNumberId))
 	err := request.CreateRequest(ctx, http.MethodGet)
 	if err != nil {
@@ -45,7 +45,7 @@ func (k *keeperGateway) GetClientByPhoneNumberId(ctx context.Context, phoneNumbe
 
 	var voClient valueobject.Client
 
-	if err = request.GetBody(&voClient); err != nil {
+	if err = request.GetBody(ctx, &voClient); err != nil {
 		return nil, err
 	}
 	return &voClient, nil

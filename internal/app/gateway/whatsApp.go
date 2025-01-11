@@ -45,7 +45,7 @@ func (w *whatsAppGateway) SendMessage(
 	phoneNumberId string,
 	messageDto *dto.GatewayWhatsAppMessageDto,
 ) (*dto.ResponseWhatsAppGateway, error) {
-	hlog.Debug("whatsAppGateway.SendMessage", fmt.Sprintf("Send Message %v", messageDto))
+	hlog.Debug(ctx, "whatsAppGateway.SendMessage", fmt.Sprintf("Send Message %v", messageDto))
 
 	client, err := w.clientRepository.GetClientById(ctx, phoneNumberId)
 	if err != nil {
@@ -61,12 +61,12 @@ func (w *whatsAppGateway) SendMessage(
 	)
 
 	if err = request.CreateRequest(ctx, http.MethodPost); err != nil {
-		hlog.Error("whatsAppGateway.SendMessage", fmt.Sprintf("Failed to send message %v", messageDto))
+		hlog.Error(ctx, "whatsAppGateway.SendMessage", fmt.Sprintf("Failed to send message %v", messageDto))
 		return nil, err
 	}
 
 	var resp *dto.ResponseWhatsAppGateway
-	if err = request.GetBody(resp); err != nil {
+	if err = request.GetBody(ctx, resp); err != nil {
 		return nil, err
 	}
 

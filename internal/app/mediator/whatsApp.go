@@ -2,6 +2,7 @@ package mediator
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	dto "github.com/inter-hubly/linker/internal/app/domain/dto/pulse"
@@ -64,7 +65,7 @@ func (w *whatsAppMediator) StartTemplate(ctx context.Context, template *dtoWhats
 			ReceivedAt: time.Now().Unix(),
 		})
 	} else {
-		hlog.Error("whatsAppMediator.StartTemplate", "error when send message to whatsApp", err)
+		hlog.Error(ctx, "whatsAppMediator.StartTemplate", fmt.Sprint("error when send message to whatsApp", err))
 		chatDb.Audit = append(chatDb.Audit, entity.ChatMessageStatusTime{
 			Status:     dtoWhats.ErrorStatus,
 			ReceivedAt: time.Now().Unix(),
@@ -111,7 +112,7 @@ func (w *whatsAppMediator) persistMessageInElastic(ctx context.Context, whatsId 
 
 	_, err := w.whatsAppRepository.PersistMessage(ctx, &chat)
 	if err != nil {
-		hlog.Error("whatsAppMediator.persistMessageInElastic", "error when persist message", err)
+		hlog.Error(ctx, "whatsAppMediator.persistMessageInElastic", fmt.Sprint("error when persist message", err))
 		return err
 	}
 
@@ -141,7 +142,7 @@ func (w *whatsAppMediator) ReceiveMessage(ctx context.Context, received *dtoWhat
 			ToPhone:     entityChat.ToPhoneId,
 			ProfileName: entityChat.ProfileName,
 		}); err != nil {
-			hlog.Error("whatsAppMediator.ReceiveMessage", "error when persist message", err)
+			hlog.Error(ctx, "whatsAppMediator.ReceiveMessage", fmt.Sprint("error when persist message", err))
 		}
 	}(&chat)
 
@@ -152,7 +153,7 @@ func (w *whatsAppMediator) sendMessageToWhatsApp(ctx context.Context, ownerId st
 	resp, err := w.whatsAppGateway.SendMessage(ctx, ownerId, message)
 
 	if err != nil {
-		hlog.Error("whatsAppMediator.sendMessageToWhatsApp", "error when send message", err)
+		hlog.Error(ctx, "whatsAppMediator.sendMessageToWhatsApp", fmt.Sprint("error when send message", err))
 		return "", err
 	}
 
