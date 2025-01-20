@@ -49,4 +49,5 @@ func Start(ctx context.Context) {
 	)
 
 	controller.NewWhatsApp(ctx)
+	controller.NewFlow(ctx)
 }

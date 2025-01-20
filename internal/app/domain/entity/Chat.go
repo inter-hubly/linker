@@ -3,7 +3,7 @@ package entity
 import (
 	"time"
 
-	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/app/domain/dto"
 )
 
 type ChatType string
@@ -14,17 +14,17 @@ const (
 )
 
 type Chat struct {
-	Audit        []ChatMessageStatusTime `json:"status,omitempty"`
-	Type         ChatType                `json:"type"`
-	MessageId    string                  `json:"messageId,omitempty"`
-	ProfileName  string                  `json:"profileName,omitempty"`
-	OwnerId      string                  `json:"ownerId"`
-	ToPhoneId    string                  `json:"toPhoneId,omitempty"`
-	TemplateName string                  `json:"templateName,omitempty"`
-	Message      string                  `json:"message,omitempty"`
-	IsOwner      bool                    `json:"isOwner"`
-	CreatedAt    time.Time               `json:"createdAt,omitempty"`
-	UpdatedAt    time.Time               `json:"updatedAt,omitempty"`
+	Audit       []ChatMessageStatusTime `json:"status,omitempty"`
+	Type        ChatType                `json:"type"`
+	MessageId   string                  `json:"messageId,omitempty"`
+	ProfileName string                  `json:"profileName,omitempty"`
+	OwnerId     string                  `json:"ownerId"`
+	ToPhoneId   string                  `json:"toPhoneId,omitempty"`
+	CampaignId  string                  `json:"campaignId,omitempty"`
+	Message     string                  `json:"message,omitempty"`
+	IsOwner     bool                    `json:"isOwner"`
+	CreatedAt   time.Time               `json:"createdAt,omitempty"`
+	UpdatedAt   time.Time               `json:"updatedAt,omitempty"`
 }
 
 type ChatMessageStatusTime struct {

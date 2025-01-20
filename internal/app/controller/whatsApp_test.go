@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/app/domain/dto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -46,3 +46,18 @@ var jsonReceived = `{
     "bodyLength": 50
   }
 }`
+
+// {
+//  "to": "5548991784586",
+//  "CampaignId": "DkxNzg0NTg2FQIAEhgWM0",
+//  "parameters": [
+//    {
+//      "key": "text",
+//      "value": "Saimon"
+//    },
+//    {
+//      "key": "text",
+//      "value": "12,20"
+//    }
+//  ]
+// }

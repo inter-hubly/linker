@@ -44,7 +44,6 @@ func (k *keeperGateway) GetClientByPhoneNumberId(ctx context.Context, phoneNumbe
 	}
 
 	var voClient valueobject.Client
-
 	if err = request.GetBody(ctx, &voClient); err != nil {
 		return nil, err
 	}

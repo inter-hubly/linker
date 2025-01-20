@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	entity "github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
+	entity "github.com/inter-hubly/linker/internal/app/domain/dto"
 	entity2 "github.com/inter-hubly/linker/internal/app/domain/entity"
 )
 

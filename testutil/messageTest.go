@@ -3,27 +3,27 @@ package testutil
 import (
 	"encoding/json"
 
-	dto "github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
+	dto2 "github.com/inter-hubly/linker/internal/app/domain/dto"
 	"github.com/inter-hubly/linker/internal/app/domain/entity"
 )
 
-func GetMessageTest() *dto.WhatsAppJSONReceived {
-	return &dto.WhatsAppJSONReceived{
-		Owner: dto.WhatsAppPhoneIdDto{
+func GetMessageTest() *dto2.WhatsAppJSONReceived {
+	return &dto2.WhatsAppJSONReceived{
+		Owner: dto2.WhatsAppPhoneIdDto{
 			PhoneNumberId: "559153210606318",
 		},
-		Sender: dto.WhatsAppPhoneIdDto{
+		Sender: dto2.WhatsAppPhoneIdDto{
 			PhoneNumberId: "554891784586",
 		},
-		Metadata: dto.WhatsAppMetadataDto{
+		Metadata: dto2.WhatsAppMetadataDto{
 			Body: "Mensagem teste do aplicativo",
 		},
 	}
 }
 
 func SentMessage() ([]byte, error) {
-	res := dto.SendTextDto{
-		SenderAndReceiver: dto.SenderAndReceiverDto{
+	res := dto2.SendTextDto{
+		SenderAndReceiver: dto2.SenderAndReceiverDto{
 			To: "5548991784586",
 		},
 		Message: "Messagem de teste",
@@ -35,9 +35,9 @@ func SentMessage() ([]byte, error) {
 	return marshal, nil
 }
 
-func GetStartTemplateMessage() dto.StartTemplateDto {
-	return dto.StartTemplateDto{
-		SenderAndReceiver: dto.SenderAndReceiverDto{
+func GetStartTemplateMessage() dto2.StartTemplateDto {
+	return dto2.StartTemplateDto{
+		SenderAndReceiver: dto2.SenderAndReceiverDto{
 			To: "+5548991784586",
 		},
 		Name:     "hello_world",
@@ -54,7 +54,7 @@ func StartMessage() ([]byte, error) {
 	return marshal, nil
 }
 
-func GetChatToSave(e *dto.WhatsAppJSONReceived) *entity.Chat {
+func GetChatToSave(e *dto2.WhatsAppJSONReceived) *entity.Chat {
 	return &entity.Chat{
 		MessageId: e.Metadata.MessageId,
 		OwnerId:   e.Owner.PhoneNumberId,
@@ -62,23 +62,23 @@ func GetChatToSave(e *dto.WhatsAppJSONReceived) *entity.Chat {
 	}
 }
 
-func NewWhatsAppMessage() *dto.WhatsAppJSONReceived {
-	return &dto.WhatsAppJSONReceived{
+func NewWhatsAppMessage() *dto2.WhatsAppJSONReceived {
+	return &dto2.WhatsAppJSONReceived{
 		Id:     "123456",
 		Active: true,
-		Owner: dto.WhatsAppPhoneIdDto{
+		Owner: dto2.WhatsAppPhoneIdDto{
 			PhoneNumberId: "515719138282305",
 		},
-		Status: dto.DeliveredStatus,
-		Sender: dto.WhatsAppPhoneIdDto{
+		Status: dto2.DeliveredStatus,
+		Sender: dto2.WhatsAppPhoneIdDto{
 			PhoneNumberId: "554891784586",
 		},
-		Metadata: dto.WhatsAppMetadataDto{
+		Metadata: dto2.WhatsAppMetadataDto{
 			ExpirationTimeStamp: "1732814400",
 			MessageId:           "wamid.HBgMNTU0ODkxNzg0NTg2FQIAERgSRjJCRDQ0NTIzNkNEMTY5Q0JGAA==",
 			ConversationId:      "8496b7ae453f655b01ac1e5654713a1d",
 			Timestamp:           "1731695647",
-			OriginType:          dto.UtilityOriginType,
+			OriginType:          dto2.UtilityOriginType,
 		},
 	}
 }

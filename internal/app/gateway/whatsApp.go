@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/app/domain/dto"
 	"github.com/inter-hubly/linker/internal/app/repository"
 	"github.com/inter-hubly/pilot/hlog"
 	"github.com/inter-hubly/pilot/hrest"
@@ -20,17 +20,17 @@ type WhatsApp interface {
 	ReadyMessage(ctx context.Context, phoneNumberId, messageId string) error
 }
 
-var (
-	whatsAppOnce sync.Once
-	whatsApp     *whatsAppGateway
-)
-
 type whatsAppGateway struct {
 	url              string
 	clientRepository repository.Client
 }
 
 func NewWhatsApp() *whatsAppGateway {
+	var (
+		whatsAppOnce sync.Once
+		whatsApp     *whatsAppGateway
+	)
+
 	whatsAppOnce.Do(func() {
 		whatsApp = &whatsAppGateway{
 			url:              "https://graph.facebook.com/v21.0/",
@@ -65,12 +65,12 @@ func (w *whatsAppGateway) SendMessage(
 		return nil, err
 	}
 
-	var resp *dto.ResponseWhatsAppGateway
-	if err = request.GetBody(ctx, resp); err != nil {
+	var resp dto.ResponseWhatsAppGateway
+	if err = request.GetBody(ctx, &resp); err != nil {
 		return nil, err
 	}
 
-	return resp, nil
+	return &resp, nil
 }
 
 func (w *whatsAppGateway) ReadyMessage(ctx context.Context, phoneNumberId, messageId string) error {

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/app/domain/dto"
 	entity "github.com/inter-hubly/linker/internal/app/domain/entity"
 	"github.com/inter-hubly/linker/testutil"
 	"github.com/inter-hubly/pilot/database/elasticsearch"

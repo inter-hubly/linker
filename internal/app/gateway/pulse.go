@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"sync"
 
-	dto "github.com/inter-hubly/linker/internal/app/domain/dto/pulse"
+	"github.com/inter-hubly/linker/internal/app/domain/dto"
 	"github.com/inter-hubly/pilot/server"
 )
 

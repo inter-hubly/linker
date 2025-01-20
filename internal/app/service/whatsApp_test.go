@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/app/domain/dto"
 	"github.com/inter-hubly/pilot/server"
 	"github.com/stretchr/testify/assert"
 )

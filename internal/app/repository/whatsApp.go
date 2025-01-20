@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/app/domain/dto"
 	"github.com/inter-hubly/linker/internal/app/domain/entity"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
 )
