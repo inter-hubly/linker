@@ -46,14 +46,6 @@ func NewWhatsApp() *whatsAppService {
 
 func (w *whatsAppService) StartTemplate(ctx context.Context, template *base.StartTemplateDto) error {
 	hlog.Debug(ctx, "whatsAppService.StartTemplate", fmt.Sprintf("%v", template))
-	campaign, err := w.campaignRepository.GetCampaignById(ctx, template.CampaignId)
-	if err != nil {
-		hlog.Error(ctx, "whatsAppMediator.StartTemplate", err.Error())
-		return err
-	}
-	if uint8(len(template.Parameters)) != campaign.ParametersLength {
-		hlog.Error(ctx, "whatsAppMediator.StartTemplate", "wrong number of parameters")
-	}
 
 	components := w.createParameters(ctx, template.Parameters)
 	gatewayTemplate := dto.GatewayWhatsAppMessageDto{
@@ -61,9 +53,9 @@ func (w *whatsAppService) StartTemplate(ctx context.Context, template *base.Star
 		To:               template.To,
 		Type:             dto.TemplateMessageType,
 		Template: &dto.TemplateBody{
-			Name: campaign.TemplateName,
+			Name: template.Template.Name,
 			Language: dto.Language{
-				Code: campaign.TemplateLanguage,
+				Code: template.Template.Language,
 			},
 			Components: []dto.Component{
 				{
@@ -74,7 +66,7 @@ func (w *whatsAppService) StartTemplate(ctx context.Context, template *base.Star
 		},
 	}
 
-	return w.whatsappMediator.StartTemplate(ctx, campaign.Id, &gatewayTemplate)
+	return w.whatsappMediator.StartTemplate(ctx, template.CampaignId, &gatewayTemplate)
 }
 
 func (w *whatsAppService) SendMessage(ctx context.Context, template *base.SendTextDto) error {

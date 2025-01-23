@@ -6,6 +6,7 @@ import (
 	"github.com/inter-hubly/linker/internal/app/controller"
 	rabbitmq "github.com/inter-hubly/pilot/broker"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
+	"github.com/inter-hubly/pilot/database/hmongo"
 	"github.com/inter-hubly/pilot/database/pgsql"
 	"github.com/inter-hubly/pilot/server"
 )
@@ -28,16 +29,14 @@ func Start(ctx context.Context) {
 		panic(err)
 	}
 
-	elasticsearch.NewConn(
-		elasticsearch.WithUrl([]string{server.GetElasticSearch().Host}),
-		elasticsearch.WithUsernameAndPassword(
-			server.GetElasticSearch().Username,
-			server.GetElasticSearch().Password,
-		),
-	)
-
 	pgsql.NewConnection(
 		pgsql.WithUrl(server.GetPgsqlConfig().Host),
+	)
+
+	hmongo.NewConnection(
+		ctx,
+		hmongo.WithDatabase(server.GetMongoConfig().Database),
+		hmongo.WithUrl(server.GetMongoConfig().Host),
 	)
 
 	elasticsearch.NewConn(

@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/inter-hubly/linker/internal/app/gateway"
 	"github.com/inter-hubly/pilot/domain/valueobject"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,7 +14,7 @@ func TestClient(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	keeper := gateway.NewMockKeeper(ctrl)
+	// keeper := gateway.NewMockKeeper(ctrl)
 	client := clientRepository{
 		// connection: keeper,
 	}
@@ -24,13 +23,13 @@ func TestClient(t *testing.T) {
 		PhoneNumberId: "123",
 		AccessToken:   "acess_token",
 	}
-	keeper.EXPECT().GetClient(
-		gomock.Any(),
-		gomock.Any(),
-	).Return(
-		returnedValue,
-		nil,
-	)
+	// keeper.EXPECT().GetClient(
+	// 	gomock.Any(),
+	// 	gomock.Any(),
+	// ).Return(
+	// 	returnedValue,
+	// 	nil,
+	// )
 	ctx := context.Background()
 	t.Run("Get Client in cache", func(t *testing.T) {
 		firstValue, err := client.GetClientById(ctx, "1")

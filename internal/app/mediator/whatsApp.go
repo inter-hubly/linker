@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/inter-hubly/linker/internal/app/domain/dto"
 	"github.com/inter-hubly/linker/internal/app/domain/entity"
 	"github.com/inter-hubly/linker/internal/app/gateway"
@@ -16,7 +17,7 @@ import (
 
 type WhatsApp interface {
 	SendMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error
-	StartTemplate(ctx context.Context, campaignId string, template *dto.GatewayWhatsAppMessageDto) error
+	StartTemplate(ctx context.Context, campaignId uuid.UUID, template *dto.GatewayWhatsAppMessageDto) error
 	ReceiveMessage(ctx context.Context, received *dto.WhatsAppJSONReceived) error
 }
 
@@ -29,7 +30,7 @@ type whatsAppMediator struct {
 
 func NewWhatsApp() WhatsApp {
 	var whatsAppGateway gateway.WhatsApp
-	if server.GetEnvironment().Env == "development" {
+	if server.GetEnvironment().Env != "development" {
 		whatsAppGateway = gateway.NewWhatsAppMock()
 	} else {
 		whatsAppGateway = gateway.NewWhatsApp()
@@ -44,7 +45,7 @@ func NewWhatsApp() WhatsApp {
 
 }
 
-func (w *whatsAppMediator) StartTemplate(ctx context.Context, campaignId string, template *dto.GatewayWhatsAppMessageDto) error {
+func (w *whatsAppMediator) StartTemplate(ctx context.Context, campaignId uuid.UUID, template *dto.GatewayWhatsAppMessageDto) error {
 	tenantId := hctx.Tenant.Get(ctx)
 
 	res, err := w.whatsAppGateway.SendMessage(ctx, tenantId, template)
