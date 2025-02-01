@@ -3,12 +3,14 @@ package repository
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 
-	"github.com/inter-hubly/linker/internal/app/domain/entity"
-	"github.com/inter-hubly/pilot/database/pgsql"
+	"github.com/inter-hubly/pilot/database/hmongo"
+	"github.com/inter-hubly/pilot/domain/entity"
+	"github.com/inter-hubly/pilot/hctx"
 	"github.com/inter-hubly/pilot/hlog"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Contact interface {
@@ -16,51 +18,66 @@ type Contact interface {
 }
 
 type contactRepository struct {
-	connection pgsql.SqlConn
+	connection hmongo.NoSqlConn
+	collection string
 }
 
-func NewContact() *contactRepository {
+var (
+	contactOnce sync.Once
+	contact     *contactRepository
+)
 
-	var (
-		clientOnce sync.Once
-		client     *contactRepository
-	)
+func NewContact(ctx context.Context) *contactRepository {
 
-	clientOnce.Do(func() {
-		client = &contactRepository{
-			connection: pgsql.GetConnection(),
+	contactOnce.Do(func() {
+		contact = &contactRepository{
+			connection: hmongo.GetConnection(ctx),
+			collection: "contact",
 		}
 	})
-	return client
+	return contact
 }
 
 func (r *contactRepository) GetContactsById(ctx context.Context, contactsId ...string) ([]*entity.Contact, error) {
 	hlog.Debug(ctx, "contactRepository.GetContactsById", fmt.Sprint("contactsId", contactsId))
+	tenantId := hctx.Tenant.Get(ctx)
 
-	placeholders := make([]string, len(contactsId))
-	args := make([]interface{}, len(contactsId))
-	for i, id := range contactsId {
-		placeholders[i] = fmt.Sprintf("$%d", i+1)
-		args[i] = id
-	}
-
-	sqlQuery := fmt.Sprintf("SELECT c.id, c.name, c.phone FROM contact c WHERE c.id IN (%s)", strings.Join(placeholders, ", "))
-	query, err := r.connection.QueryRows(sqlQuery, args...)
-	hlog.Info(ctx, "contactRepository.GetContactsById", fmt.Sprintf("sqlQuery %s %s", sqlQuery, args))
-	if err != nil {
-		hlog.Error(ctx, "contactRepository.GetContactsById", fmt.Sprintf("error in query %s", err.Error()))
-		return nil, err
-	}
-	defer query.Close()
-
-	var contacts []*entity.Contact
-	for query.Next() {
-		var contact entity.Contact
-		if err = query.Scan(&contact.Id, &contact.Name, &contact.Phone); err != nil {
-			hlog.Error(ctx, "contactRepository.GetContactsById", fmt.Sprintf("error scanning row: %s", err.Error()))
+	ids := make([]primitive.ObjectID, 0, len(contactsId))
+	for _, id := range contactsId {
+		objId, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			hlog.Error(ctx, "contactRepository.GetContactsById.err", err.Error())
 			return nil, err
 		}
-		contacts = append(contacts, &contact)
+		ids = append(ids, objId)
+	}
+
+	filter := bson.M{
+		"tenantId": tenantId,
+		"_id": bson.M{
+			"$in": ids,
+		},
+	}
+
+	cur, err := r.connection.GetCollection(ctx, r.collection).Find(ctx, filter)
+	if err != nil {
+		hlog.Error(ctx, "contactRepository.GetContactsById", fmt.Sprint("error finding contacts: ", err.Error()))
+		return nil, err
+	}
+
+	var contacts []*entity.Contact
+	for cur.Next(ctx) {
+		var ct entity.Contact
+		if err = cur.Decode(&ct); err != nil {
+			hlog.Error(ctx, "contactRepository.GetContactsById", fmt.Sprint("error decoding ", err.Error()))
+			continue
+		}
+		contacts = append(contacts, &ct)
+	}
+
+	if err = cur.Err(); err != nil {
+		hlog.Error(ctx, "contactRepository.GetContactsById", fmt.Sprint("error iterating cursor: ", err.Error()))
+		return nil, err
 	}
 
 	return contacts, nil

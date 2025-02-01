@@ -10,7 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	entity "github.com/inter-hubly/linker/internal/app/domain/dto"
-	entity2 "github.com/inter-hubly/linker/internal/app/domain/entity"
+	entity2 "github.com/inter-hubly/linker/internal/app/domain/lentity"
 )
 
 // MockWhatsApp is a mock of WhatsApp interface.

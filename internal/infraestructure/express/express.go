@@ -25,6 +25,7 @@ func Start(ctx context.Context) {
 			rabbitmq.NewQueueBinding("whatsapp.message", "whatsapp.message", ExchangeBroker),
 			rabbitmq.NewQueueBinding("whatsapp.sent", "whatsapp.sent", ExchangeBroker),
 			rabbitmq.NewQueueBinding("whatsapp.send", "whatsapp.send", ExchangeBroker),
+			rabbitmq.NewQueueBinding("campaign.init", "campaign.init", ExchangeBroker),
 		); err != nil {
 		panic(err)
 	}

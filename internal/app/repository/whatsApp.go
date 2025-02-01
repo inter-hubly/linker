@@ -7,12 +7,12 @@ import (
 	"time"
 
 	"github.com/inter-hubly/linker/internal/app/domain/dto"
-	"github.com/inter-hubly/linker/internal/app/domain/entity"
+	"github.com/inter-hubly/linker/internal/app/domain/lentity"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
 )
 
 type WhatsApp interface {
-	PersistMessage(ctx context.Context, message *entity.Chat) (string, error)
+	PersistMessage(ctx context.Context, message *lentity.Chat) (string, error)
 	SetStatusMessageById(ctx context.Context, messageId string, status dto.MessageStatus, expirationTime int64) error
 }
 
@@ -37,7 +37,7 @@ func NewWhatsApp() *whatsAppRepository {
 	return whatsApp
 }
 
-func (w *whatsAppRepository) PersistMessage(ctx context.Context, message *entity.Chat) (string, error) {
+func (w *whatsAppRepository) PersistMessage(ctx context.Context, message *lentity.Chat) (string, error) {
 	now := time.Now()
 	message.CreatedAt = now
 	message.UpdatedAt = now

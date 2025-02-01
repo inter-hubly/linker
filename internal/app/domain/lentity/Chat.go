@@ -1,9 +1,8 @@
-package entity
+package lentity
 
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/inter-hubly/linker/internal/app/domain/dto"
 )
 
@@ -21,7 +20,7 @@ type Chat struct {
 	ProfileName string                  `json:"profileName,omitempty"`
 	OwnerId     string                  `json:"ownerId"`
 	ToPhoneId   string                  `json:"toPhoneId,omitempty"`
-	CampaignId  uuid.UUID               `json:"campaignId,omitempty"`
+	CampaignId  string                  `json:"campaignId,omitempty"`
 	Message     string                  `json:"message,omitempty"`
 	IsOwner     bool                    `json:"isOwner"`
 	CreatedAt   time.Time               `json:"createdAt,omitempty"`

@@ -27,18 +27,18 @@ type whatsAppService struct {
 	campaignRepository repository.Campaign
 }
 
-func NewWhatsApp() *whatsAppService {
+var (
+	whatsAppServiceOnce sync.Once
+	whatsApp            *whatsAppService
+)
 
-	var (
-		serviceOnce sync.Once
-		whatsApp    *whatsAppService
-	)
+func NewWhatsApp(ctx context.Context) *whatsAppService {
 
-	serviceOnce.Do(func() {
+	whatsAppServiceOnce.Do(func() {
 		whatsApp = &whatsAppService{
 			whatsappMediator:   mediator.NewWhatsApp(),
 			whatsappRepository: repository.NewWhatsApp(),
-			campaignRepository: repository.NewCampaign(),
+			campaignRepository: repository.NewCampaign(ctx),
 		}
 	})
 	return whatsApp

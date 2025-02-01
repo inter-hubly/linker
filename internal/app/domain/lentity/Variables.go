@@ -1,4 +1,4 @@
-package entity
+package lentity
 
 import "github.com/inter-hubly/pilot/domain/base"
 

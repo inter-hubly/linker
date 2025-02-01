@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/inter-hubly/linker/internal/app/domain/dto"
-	"github.com/inter-hubly/linker/internal/app/domain/entity"
+	"github.com/inter-hubly/linker/internal/app/domain/lentity"
 	"github.com/inter-hubly/linker/internal/app/gateway"
 	"github.com/inter-hubly/linker/internal/app/repository"
 	"github.com/inter-hubly/pilot/hctx"
@@ -17,7 +16,7 @@ import (
 
 type WhatsApp interface {
 	SendMessage(ctx context.Context, message *dto.WhatsAppJSONReceived) error
-	StartTemplate(ctx context.Context, campaignId uuid.UUID, template *dto.GatewayWhatsAppMessageDto) error
+	StartTemplate(ctx context.Context, campaignId string, template *dto.GatewayWhatsAppMessageDto) error
 	ReceiveMessage(ctx context.Context, received *dto.WhatsAppJSONReceived) error
 }
 
@@ -45,14 +44,14 @@ func NewWhatsApp() WhatsApp {
 
 }
 
-func (w *whatsAppMediator) StartTemplate(ctx context.Context, campaignId uuid.UUID, template *dto.GatewayWhatsAppMessageDto) error {
+func (w *whatsAppMediator) StartTemplate(ctx context.Context, campaignId string, template *dto.GatewayWhatsAppMessageDto) error {
 	tenantId := hctx.Tenant.Get(ctx)
 
 	res, err := w.whatsAppGateway.SendMessage(ctx, tenantId, template)
 	// need persist even with errors
-	chatDb := entity.Chat{}
+	chatDb := lentity.Chat{}
 	chatDb.OwnerId = tenantId
-	chatDb.Type = entity.ChatTemplate
+	chatDb.Type = lentity.ChatTemplate
 	chatDb.CampaignId = campaignId
 	chatDb.ToPhoneId = template.To
 	chatDb.IsOwner = true
@@ -60,13 +59,13 @@ func (w *whatsAppMediator) StartTemplate(ctx context.Context, campaignId uuid.UU
 	if err == nil {
 		chatDb.MessageId = res.Messages[0].Id
 
-		chatDb.Audit = append(chatDb.Audit, entity.ChatMessageStatusTime{
+		chatDb.Audit = append(chatDb.Audit, lentity.ChatMessageStatusTime{
 			Status:     dto.StartStatus,
 			ReceivedAt: time.Now().Unix(),
 		})
 	} else {
 		hlog.Error(ctx, "whatsAppMediator.StartTemplate", fmt.Sprint("error when send message to whatsApp", err))
-		chatDb.Audit = append(chatDb.Audit, entity.ChatMessageStatusTime{
+		chatDb.Audit = append(chatDb.Audit, lentity.ChatMessageStatusTime{
 			Status:     dto.ErrorStatus,
 			ReceivedAt: time.Now().Unix(),
 		})
@@ -95,14 +94,14 @@ func (w *whatsAppMediator) SendMessage(ctx context.Context, message *dto.WhatsAp
 }
 
 func (w *whatsAppMediator) persistMessageInElastic(ctx context.Context, whatsId string, received *dto.WhatsAppJSONReceived) error {
-	chat := entity.Chat{
+	chat := lentity.Chat{
 		MessageId: whatsId,
-		Type:      entity.ChatText,
+		Type:      lentity.ChatText,
 		OwnerId:   received.Owner.PhoneNumberId,
 		ToPhoneId: received.Sender.PhoneNumberId,
 		Message:   received.Metadata.Body,
 		IsOwner:   true,
-		Audit: []entity.ChatMessageStatusTime{
+		Audit: []lentity.ChatMessageStatusTime{
 			{
 				Status:     dto.StartStatus,
 				ReceivedAt: time.Now().Unix(),
@@ -121,8 +120,8 @@ func (w *whatsAppMediator) persistMessageInElastic(ctx context.Context, whatsId 
 
 func (w *whatsAppMediator) ReceiveMessage(ctx context.Context, received *dto.WhatsAppJSONReceived) error {
 
-	chat := entity.Chat{
-		Type:        entity.ChatText,
+	chat := lentity.Chat{
+		Type:        lentity.ChatText,
 		MessageId:   received.Metadata.MessageId,
 		OwnerId:     received.Owner.PhoneNumberId,
 		ToPhoneId:   received.Sender.PhoneNumberId,
@@ -136,7 +135,7 @@ func (w *whatsAppMediator) ReceiveMessage(ctx context.Context, received *dto.Wha
 		return err
 	}
 
-	go func(entityChat *entity.Chat) {
+	go func(entityChat *lentity.Chat) {
 		if err = w.pulseGateway.HandleMessage(ctx, received.Owner.PhoneNumberId, &dto.PulseDto{
 			Message:     entityChat.Message,
 			ToPhone:     entityChat.ToPhoneId,

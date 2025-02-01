@@ -2,10 +2,14 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/inter-hubly/pilot/database/hmongo"
-	"github.com/inter-hubly/pilot/domain/valueobject"
+	"github.com/inter-hubly/pilot/hctx"
+	"github.com/inter-hubly/pilot/hlog"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Variables interface {
@@ -17,22 +21,42 @@ type variablesRepository struct {
 	collection string
 }
 
+var (
+	variablesOnce sync.Once
+	variable      *variablesRepository
+)
+
 func NewVariables(ctx context.Context) *variablesRepository {
 
-	var (
-		once       sync.Once
-		repository *variablesRepository
-	)
-
-	once.Do(func() {
-		repository = &variablesRepository{
-			connection: hmongo.GetConnection(ctx, "variables"),
+	variablesOnce.Do(func() {
+		variable = &variablesRepository{
+			connection: hmongo.GetConnection(ctx),
+			collection: "variables",
 		}
 	})
-	return repository
+	return variable
 }
 
 func (v *variablesRepository) GetVariablesByUserId(ctx context.Context, userId string, variables ...string) (map[string]interface{}, error) {
-	field := valueobject.Pair[string, string]{Key: "userId", Value: userId}
-	return v.connection.FindByFieldWithProjection(ctx, field, variables...)
+	projection := bson.M{}
+	for _, fld := range variables {
+		projection[fld] = 1
+	}
+
+	opts := options.FindOne().SetProjection(projection)
+	tenantId := hctx.Tenant.Get(ctx)
+	result := make(map[string]interface{})
+	if err := v.connection.GetCollection(ctx, v.collection).
+		FindOne(ctx,
+			bson.M{
+				"userId":   userId,
+				"tenantId": tenantId,
+			},
+			opts).
+		Decode(&result); err != nil {
+		hlog.Error(ctx, "variablesRepository.GetVariablesByUserId", err.Error())
+		return nil, fmt.Errorf("failed to decode object: %w", err)
+	}
+
+	return result, nil
 }

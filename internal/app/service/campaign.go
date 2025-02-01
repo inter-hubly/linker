@@ -15,71 +15,66 @@ type Campaign interface {
 	StartCampaign(ctx context.Context, campaignId string) error
 }
 type campaignService struct {
-	campaignRepository  repository.Campaign
-	contactRepository   repository.Contact
-	variablesRepository repository.Variables
-	whatsAppService     WhatsApp
+	campaignRepository repository.Campaign
+	contactRepository  repository.Contact
+	// variablesRepository repository.Variables
+	whatsAppService WhatsApp
 }
+
+var (
+	campaignServiceOnce sync.Once
+	campaign            *campaignService
+)
 
 func NewCampaign(ctx context.Context) *campaignService {
 
-	var (
-		serviceOnce sync.Once
-		service     *campaignService
-	)
-
-	serviceOnce.Do(func() {
-		service = &campaignService{
-			campaignRepository:  repository.NewCampaign(),
-			contactRepository:   repository.NewContact(),
-			variablesRepository: repository.NewVariables(ctx),
-			whatsAppService:     NewWhatsApp(),
+	campaignServiceOnce.Do(func() {
+		campaign = &campaignService{
+			campaignRepository: repository.NewCampaign(ctx),
+			contactRepository:  repository.NewContact(ctx),
+			// variablesRepository: repository.NewVariables(ctx),
+			whatsAppService: NewWhatsApp(ctx),
 		}
 	})
-	return service
+	return campaign
 }
 
 func (s *campaignService) StartCampaign(ctx context.Context, campaignId string) error {
 	hlog.Debug(ctx, "campaignService.StartCampaign", fmt.Sprint("campaignId", campaignId))
-	campaign, err := s.campaignRepository.GetCampaignById(ctx, campaignId)
+	campaignDb, err := s.campaignRepository.GetCampaignById(ctx, campaignId)
 	if err != nil {
 		hlog.Error(ctx, "campaignService.StartCampaign", err.Error())
 		return err
 	}
 
-	contacts, err := s.contactRepository.GetContactsById(ctx, campaign.ContactsId...)
+	contacts, err := s.contactRepository.GetContactsById(ctx, campaignDb.ContactsId...)
 	if err != nil {
 		hlog.Error(ctx, "campaignService.StartCampaign", err.Error())
 		return err
 	}
 
-	parameters := make([]string, 0, len(campaign.Parameters))
-	for _, p := range campaign.Parameters {
-		parameters = append(parameters, p.Value)
-	}
-
+	userParameters := make([]valueobject.Pair[string, string], 0, len(campaignDb.Variables))
+	// percorrer cada contato
 	for _, contact := range contacts {
-		var variables map[string]interface{}
-		variables, err = s.variablesRepository.GetVariablesByUserId(ctx, contact.Id.String(), parameters...)
-		if err != nil {
-			hlog.Error(ctx, "campaignService.StartCampaign", err.Error())
-			return err
-		}
-		userParameters := make([]valueobject.Pair[string, string], 0, len(variables))
-		for _, p := range parameters {
-			v := valueobject.Pair[string, string]{
-				Key:   "text",
-				Value: variables[p].(string),
+
+		// preciso verificar se o contato tem a variável necessária
+		// então vou percorrer as variaveis que a campanha pede
+		for _, p := range campaignDb.Variables {
+			var name string
+			name, err = contact.GetVariableByName(p.Value)
+			if err != nil {
+				hlog.Error(ctx, "campaignService.StartCampaign", err.Error())
+				return err
 			}
-			userParameters = append(userParameters, v)
+			userParameters = append(userParameters, valueobject.Pair[string, string]{Key: p.Key, Value: name})
 		}
 
 		err = s.whatsAppService.StartTemplate(ctx, &base.StartTemplateDto{
 			To:         contact.Phone,
-			CampaignId: campaign.Id,
+			CampaignId: campaignDb.Id,
 			Template: base.TemplateInfo{
-				Name:     campaign.Template.Name,
-				Language: campaign.Template.Language,
+				Name:     campaignDb.Template.Name,
+				Language: campaignDb.Template.Language,
 			},
 			Parameters: userParameters,
 		})

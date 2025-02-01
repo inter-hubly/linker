@@ -24,7 +24,7 @@ func NewWhatsApp(ctx context.Context) {
 	whatsAppOnce.Do(func() {
 		whatsApp = &whatsAppController{
 			rabbit:          broker.GetConnection(),
-			whatsAppService: service.NewWhatsApp(),
+			whatsAppService: service.NewWhatsApp(ctx),
 		}
 
 		whatsApp.StartTemplate(ctx)
@@ -57,7 +57,7 @@ func (w *whatsAppController) StartTemplate(ctx context.Context) {
 			hlog.Error(ctx, "whatsAppController.StartTemplate", fmt.Sprintf("err parsing: %s", err))
 			return
 		}
-		if startTemplate.CampaignId.String() == "" {
+		if startTemplate.CampaignId == "" {
 			hlog.Error(ctx, "whatsAppController.StartTemplate", "CampaignId can't be empty")
 		}
 		w.whatsAppService.StartTemplate(ctx, &startTemplate)

@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/inter-hubly/linker/internal/app/domain/entity"
-	"github.com/inter-hubly/pilot/domain/base"
-	"github.com/inter-hubly/pilot/domain/valueobject"
+	"github.com/inter-hubly/pilot/database/hmongo"
+	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/hlog"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Campaign interface {
@@ -16,34 +17,43 @@ type Campaign interface {
 }
 
 type campaignRepository struct {
+	connection hmongo.NoSqlConn
+	collection string
 }
 
-func NewCampaign() *campaignRepository {
-	var (
-		once       sync.Once
-		repository *campaignRepository
-	)
+var (
+	campaignRepositoryOnce sync.Once
+	campaign               *campaignRepository
+)
 
-	once.Do(func() {
-		repository = &campaignRepository{}
+func NewCampaign(ctx context.Context) *campaignRepository {
+
+	campaignRepositoryOnce.Do(func() {
+		campaign = &campaignRepository{
+			connection: hmongo.GetConnection(ctx),
+			collection: "campaign",
+		}
 	})
-	return repository
+	return campaign
 }
 
 func (r *campaignRepository) GetCampaignById(ctx context.Context, campaignId string) (*entity.Campaign, error) {
-	hlog.Debug(ctx, "campaignRepository.GetCampaignById", fmt.Sprint("campaignId", campaignId))
-	return &entity.Campaign{
-		Parameters: []valueobject.Pair[string, string]{
-			{"text", "name"},
-			{"text", "value"},
+	hlog.Debug(ctx, "campaignRepository.GetCampaignById", fmt.Sprintf("campaignId: %s", campaignId))
+	var camp entity.Campaign
+
+	objID, err := primitive.ObjectIDFromHex(campaignId)
+	if err != nil {
+		hlog.Error(ctx, "campaignRepository.GetCampaignById", fmt.Sprintf("campaignId: %s", campaignId))
+		return nil, err
+	}
+
+	if err = r.connection.GetCollection(ctx, r.collection).FindOne(ctx,
+		bson.M{
+			"_id": objID,
 		},
-		Template: base.TemplateInfo{
-			Language: "pt_BR",
-			Name:     "cobranca_mensal",
-		},
-		ContactsId: []string{
-			"a92ce761-d1eb-423a-9563-d2de43e888b2",
-			"34927c6b-8dae-4c04-b2e1-5f21032f31f1",
-		},
-	}, nil
+	).Decode(&camp); err != nil {
+		hlog.Error(ctx, "campaignRepository.GetCampaignById", fmt.Sprintf("campaignId: %s", campaignId))
+		return nil, err
+	}
+	return &camp, nil
 }
