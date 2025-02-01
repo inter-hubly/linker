@@ -17,8 +17,7 @@ type Campaign interface {
 type campaignService struct {
 	campaignRepository repository.Campaign
 	contactRepository  repository.Contact
-	// variablesRepository repository.Variables
-	whatsAppService WhatsApp
+	whatsAppService    WhatsApp
 }
 
 var (
@@ -32,8 +31,7 @@ func NewCampaign(ctx context.Context) *campaignService {
 		campaign = &campaignService{
 			campaignRepository: repository.NewCampaign(ctx),
 			contactRepository:  repository.NewContact(ctx),
-			// variablesRepository: repository.NewVariables(ctx),
-			whatsAppService: NewWhatsApp(ctx),
+			whatsAppService:    NewWhatsApp(ctx),
 		}
 	})
 	return campaign
