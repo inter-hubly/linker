@@ -51,9 +51,9 @@ func (s *campaignService) StartCampaign(ctx context.Context, campaignId string) 
 		return err
 	}
 
-	userParameters := make([]valueobject.Pair[string, string], 0, len(campaignDb.Variables))
 	// percorrer cada contato
 	for _, contact := range contacts {
+		userParameters := make([]valueobject.Pair[string, string], 0, len(campaignDb.Variables))
 
 		// preciso verificar se o contato tem a variável necessária
 		// então vou percorrer as variaveis que a campanha pede
