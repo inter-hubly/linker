@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"sync"
 
-	dto "github.com/inter-hubly/linker/internal/app/domain/dto/pulse"
+	"github.com/inter-hubly/linker/internal/app/domain/dto"
 	"github.com/inter-hubly/pilot/server"
 )
 
@@ -40,7 +40,7 @@ func (p *pulseGateway) HandleMessage(ctx context.Context, ownerId string, messag
 		return fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/receive?user=%s", p.url, ownerId), bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/receive?user=%s", p.url, ownerId), bytes.NewBuffer(body))
 	if err != nil {
 		return fmt.Errorf("failed to create HTTP request: %w", err)
 	}

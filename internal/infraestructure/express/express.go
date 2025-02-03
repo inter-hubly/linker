@@ -6,6 +6,7 @@ import (
 	"github.com/inter-hubly/linker/internal/app/controller"
 	rabbitmq "github.com/inter-hubly/pilot/broker"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
+	"github.com/inter-hubly/pilot/database/hmongo"
 	"github.com/inter-hubly/pilot/database/pgsql"
 	"github.com/inter-hubly/pilot/server"
 )
@@ -24,20 +25,19 @@ func Start(ctx context.Context) {
 			rabbitmq.NewQueueBinding("whatsapp.message", "whatsapp.message", ExchangeBroker),
 			rabbitmq.NewQueueBinding("whatsapp.sent", "whatsapp.sent", ExchangeBroker),
 			rabbitmq.NewQueueBinding("whatsapp.send", "whatsapp.send", ExchangeBroker),
+			rabbitmq.NewQueueBinding("campaign.init", "campaign.init", ExchangeBroker),
 		); err != nil {
 		panic(err)
 	}
 
-	elasticsearch.NewConn(
-		elasticsearch.WithUrl([]string{server.GetElasticSearch().Host}),
-		elasticsearch.WithUsernameAndPassword(
-			server.GetElasticSearch().Username,
-			server.GetElasticSearch().Password,
-		),
-	)
-
 	pgsql.NewConnection(
 		pgsql.WithUrl(server.GetPgsqlConfig().Host),
+	)
+
+	hmongo.NewConnection(
+		ctx,
+		hmongo.WithDatabase(server.GetMongoConfig().Database),
+		hmongo.WithUrl(server.GetMongoConfig().Host),
 	)
 
 	elasticsearch.NewConn(
@@ -49,4 +49,5 @@ func Start(ctx context.Context) {
 	)
 
 	controller.NewWhatsApp(ctx)
+	controller.NewFlow(ctx)
 }

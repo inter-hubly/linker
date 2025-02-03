@@ -5,9 +5,8 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/app/domain/dto"
 	"github.com/inter-hubly/linker/internal/app/gateway"
-	"github.com/inter-hubly/linker/internal/app/repository"
 	"github.com/inter-hubly/linker/testutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,10 +14,11 @@ import (
 func TestWhatsAppMediator(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	whatsGateway := gateway.NewMockWhatsApp(ctrl)
-	whatsRepository := repository.NewMockWhatsApp(ctrl)
+	// whatsRepository := repository.NewMockWhatsApp(ctrl)
 	mediator := whatsAppMediator{
 		whatsAppGateway:    whatsGateway,
-		whatsAppRepository: whatsRepository,
+		whatsAppRepository: nil,
+		// whatsAppRepository: whatsRepository,
 	}
 
 	for _, v := range []struct {
@@ -43,9 +43,9 @@ func TestWhatsAppMediator(t *testing.T) {
 					},
 				}, nil)
 
-				whatsRepository.EXPECT().
-					PersistMessage(gomock.Any(), gomock.Any()).
-					Return("", nil)
+				// whatsRepository.EXPECT().
+				// 	PersistMessage(gomock.Any(), gomock.Any()).
+				// 	Return("", nil)
 
 				message := testutil.GetStartTemplateMessage()
 				err := mediator.StartTemplate(ctx, &message)

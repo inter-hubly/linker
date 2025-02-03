@@ -6,24 +6,25 @@ import (
 	"fmt"
 	"sync"
 
-	dto "github.com/inter-hubly/linker/internal/app/domain/dto/whatsapp"
+	"github.com/inter-hubly/linker/internal/app/domain/dto"
 	"github.com/inter-hubly/linker/internal/app/service"
 	"github.com/inter-hubly/pilot/broker"
+	"github.com/inter-hubly/pilot/domain/base"
+	"github.com/inter-hubly/pilot/hctx"
 	"github.com/inter-hubly/pilot/hlog"
 	"github.com/streadway/amqp"
 )
 
-var (
-	whatsAppOnce sync.Once
-	whatsApp     *whatsAppController
-)
-
 func NewWhatsApp(ctx context.Context) {
+	var (
+		whatsAppOnce sync.Once
+		whatsApp     *whatsAppController
+	)
 
 	whatsAppOnce.Do(func() {
 		whatsApp = &whatsAppController{
 			rabbit:          broker.GetConnection(),
-			whatsAppService: service.NewWhatsApp(),
+			whatsAppService: service.NewWhatsApp(ctx),
 		}
 
 		whatsApp.StartTemplate(ctx)
@@ -48,14 +49,16 @@ type whatsAppController struct {
 
 func (w *whatsAppController) StartTemplate(ctx context.Context) {
 	w.rabbit.Consume(ctx, "whatsapp.start", func(value amqp.Delivery) {
-		ctx := context.Background()
-		var startTemplate dto.StartTemplateDto
+		header := value.Headers["tenantId"].(string)
+		ctx = hctx.Tenant.New(header)
+
+		var startTemplate base.StartTemplateDto
 		if err := json.Unmarshal(value.Body, &startTemplate); err != nil {
 			hlog.Error(ctx, "whatsAppController.StartTemplate", fmt.Sprintf("err parsing: %s", err))
 			return
 		}
-		if startTemplate.Name == "" {
-			hlog.Error(ctx, "whatsAppController.StartTemplate", "Name can't be empty")
+		if startTemplate.CampaignId == "" {
+			hlog.Error(ctx, "whatsAppController.StartTemplate", "CampaignId can't be empty")
 		}
 		w.whatsAppService.StartTemplate(ctx, &startTemplate)
 	})
@@ -64,8 +67,10 @@ func (w *whatsAppController) StartTemplate(ctx context.Context) {
 // SendMessage is when user send message in app
 func (w *whatsAppController) SendMessage(ctx context.Context) {
 	w.rabbit.Consume(ctx, "whatsapp.send", func(value amqp.Delivery) {
-		ctx := context.Background()
-		var sentText dto.SendTextDto
+		header := value.Headers["tenantId"].(string)
+		ctx = hctx.Tenant.New(header)
+
+		var sentText base.SendTextDto
 		if err := json.Unmarshal(value.Body, &sentText); err != nil {
 			hlog.Error(ctx, "whatsAppController.SendMessage", fmt.Sprintf("err parsing: %s", err))
 			return
@@ -74,7 +79,7 @@ func (w *whatsAppController) SendMessage(ctx context.Context) {
 			hlog.Error(ctx, "whatsAppController.SendMessage", "Message can't be empty")
 			return
 		}
-		if sentText.SenderAndReceiver.To == "" {
+		if sentText.To == "" {
 			hlog.Error(ctx, "whatsAppController.SendMessage", "Sender and Receiver can't be empty")
 			return
 		}
@@ -85,7 +90,9 @@ func (w *whatsAppController) SendMessage(ctx context.Context) {
 // ReceiveMessage is when other numbers send message to me
 func (w *whatsAppController) ReceiveMessage(ctx context.Context) {
 	w.rabbit.Consume(ctx, "whatsapp.message", func(value amqp.Delivery) {
-		ctx := context.Background()
+		header := value.Headers["tenantId"].(string)
+		ctx = hctx.Tenant.New(header)
+
 		var changeStatusDto dto.WhatsAppJSONReceived
 		if err := json.Unmarshal(value.Body, &changeStatusDto); err != nil {
 			hlog.Error(ctx, "whatsAppController.ReceiveMessage", fmt.Sprintf("err parsing: %s", err))
@@ -97,7 +104,9 @@ func (w *whatsAppController) ReceiveMessage(ctx context.Context) {
 
 func (w *whatsAppController) ChangeStatus(ctx context.Context) {
 	w.rabbit.Consume(ctx, "whatsapp.statuses", func(value amqp.Delivery) {
-		ctx := context.Background()
+		header := value.Headers["tenantId"].(string)
+		ctx = hctx.Tenant.New(header)
+
 		var changeStatusDto dto.ChangeStatusDto
 		if err := json.Unmarshal(value.Body, &changeStatusDto); err != nil {
 			hlog.Error(ctx, "whatsAppController.ChangeStatus", fmt.Sprintf("err parsing: %s", err))
