@@ -6,27 +6,27 @@ import (
 	"sync"
 
 	"github.com/inter-hubly/pilot/database/pgsql"
-	"github.com/inter-hubly/pilot/domain/valueobject"
+	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/hlog"
 )
 
-var clients map[string]*valueobject.Client
+var clients map[string]*entity.Client
 
 type Client interface {
-	GetClientById(ctx context.Context, clientId string) (*valueobject.Client, error)
+	GetClientById(ctx context.Context, clientId string) (*entity.Client, error)
 }
 
 type clientRepository struct {
 	connection pgsql.SqlConn
 }
 
-func NewClient() *clientRepository {
-	clients = make(map[string]*valueobject.Client)
+var (
+	clientOnce sync.Once
+	client     *clientRepository
+)
 
-	var (
-		clientOnce sync.Once
-		client     *clientRepository
-	)
+func NewClient() *clientRepository {
+	clients = make(map[string]*entity.Client)
 
 	clientOnce.Do(func() {
 		client = &clientRepository{
@@ -36,7 +36,7 @@ func NewClient() *clientRepository {
 	return client
 }
 
-func (r *clientRepository) GetClientById(ctx context.Context, clientId string) (*valueobject.Client, error) {
+func (r *clientRepository) GetClientById(ctx context.Context, clientId string) (*entity.Client, error) {
 	hlog.Debug(ctx, "clientRepository.GetClientById", fmt.Sprint("GetClientById", clientId))
 	if client, ok := clients[clientId]; ok {
 		return client, nil
@@ -50,7 +50,7 @@ func (r *clientRepository) GetClientById(ctx context.Context, clientId string) (
 		hlog.Error(ctx, "clientRepository.GetClientById", fmt.Sprintf("error find clientId %s : %s", clientId, err))
 		return nil, err
 	}
-	var clientDb valueobject.Client
+	var clientDb entity.Client
 	if err = queryExec.Scan(
 		&clientDb.Id,
 		&clientDb.Name,

@@ -25,12 +25,12 @@ type whatsAppGateway struct {
 	clientRepository repository.Client
 }
 
-func NewWhatsApp() *whatsAppGateway {
-	var (
-		whatsAppOnce sync.Once
-		whatsApp     *whatsAppGateway
-	)
+var (
+	whatsAppOnce sync.Once
+	whatsApp     *whatsAppGateway
+)
 
+func NewWhatsApp() *whatsAppGateway {
 	whatsAppOnce.Do(func() {
 		whatsApp = &whatsAppGateway{
 			url:              "https://graph.facebook.com/v21.0/",

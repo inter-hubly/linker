@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/inter-hubly/pilot/domain/valueobject"
+	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/hlog"
 	"github.com/inter-hubly/pilot/hrest"
 	"github.com/inter-hubly/pilot/server"
 )
 
 type Keeper interface {
-	GetClientByPhoneNumberId(ctx context.Context, clientId string) (*valueobject.Client, error)
+	GetClientByPhoneNumberId(ctx context.Context, clientId string) (*entity.Client, error)
 }
 
 type keeperGateway struct {
@@ -35,7 +35,7 @@ func NewKeeper() *keeperGateway {
 	return keeper
 }
 
-func (k *keeperGateway) GetClientByPhoneNumberId(ctx context.Context, phoneNumberId string) (*valueobject.Client, error) {
+func (k *keeperGateway) GetClientByPhoneNumberId(ctx context.Context, phoneNumberId string) (*entity.Client, error) {
 	hlog.Debug(ctx, "keeperGateway.GetClientByPhoneNumberId", fmt.Sprintf("PhoneNumberId: %s", phoneNumberId))
 	request := hrest.NewRequest(fmt.Sprintf("%s/api/client/%s/phone-number-id", k.url, phoneNumberId))
 	err := request.CreateRequest(ctx, http.MethodGet)
@@ -43,7 +43,7 @@ func (k *keeperGateway) GetClientByPhoneNumberId(ctx context.Context, phoneNumbe
 		return nil, err
 	}
 
-	var voClient valueobject.Client
+	var voClient entity.Client
 	if err = request.GetBody(ctx, &voClient); err != nil {
 		return nil, err
 	}
