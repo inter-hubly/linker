@@ -25,23 +25,24 @@ type whatsAppService struct {
 	whatsappMediator   mediator.WhatsApp
 	whatsappRepository repository.WhatsApp
 	campaignRepository repository.Campaign
+	flowService        Flow
 }
 
 var (
-	whatsAppServiceOnce sync.Once
-	whatsApp            *whatsAppService
+	_whatsAppServiceOnce sync.Once
+	_whatsAppService     *whatsAppService
 )
 
 func NewWhatsApp(ctx context.Context) *whatsAppService {
-
-	whatsAppServiceOnce.Do(func() {
-		whatsApp = &whatsAppService{
-			whatsappMediator:   mediator.NewWhatsApp(),
-			whatsappRepository: repository.NewWhatsApp(),
+	_whatsAppServiceOnce.Do(func() {
+		_whatsAppService = &whatsAppService{
+			whatsappMediator:   mediator.NewWhatsApp(ctx),
+			whatsappRepository: repository.NewWhatsApp(ctx),
 			campaignRepository: repository.NewCampaign(ctx),
+			flowService:        NewFlow(ctx),
 		}
 	})
-	return whatsApp
+	return _whatsAppService
 }
 
 func (w *whatsAppService) StartTemplate(ctx context.Context, template *base.StartTemplateDto) error {
@@ -71,7 +72,6 @@ func (w *whatsAppService) StartTemplate(ctx context.Context, template *base.Star
 
 func (w *whatsAppService) SendMessage(ctx context.Context, template *base.SendTextDto) error {
 	hlog.Debug(ctx, "whatsAppService.SendMessage", fmt.Sprintf("%v", template))
-
 	tenantId := hctx.Tenant.Get(ctx)
 	message := dto.WhatsAppJSONReceived{
 		Owner: dto.WhatsAppPhoneIdDto{
@@ -91,8 +91,30 @@ func (w *whatsAppService) SendMessage(ctx context.Context, template *base.SendTe
 func (w *whatsAppService) ReceiveMessage(ctx context.Context, dto *dto.WhatsAppJSONReceived) error {
 	hlog.Debug(ctx, "whatsAppService.ReceiveMessage", fmt.Sprintf("%v", dto))
 
-	if err := w.whatsappMediator.ReceiveMessage(ctx, dto); err != nil {
+	var (
+		messageToSend string
+		err           error
+	)
+
+	if err = w.whatsappMediator.ReceiveMessage(ctx, dto); err != nil {
 		return err
+	}
+
+	if dto.NextId == "" {
+		messageToSend, err = w.flowService.Start(ctx, dto.NextId)
+		if err != nil {
+			return err
+		}
+
+		err = w.SendMessage(ctx, &base.SendTextDto{
+			To:      dto.Sender.PhoneNumberId,
+			Message: messageToSend,
+			IsOwner: true,
+		})
+
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

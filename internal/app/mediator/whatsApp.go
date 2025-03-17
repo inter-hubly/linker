@@ -27,7 +27,7 @@ type whatsAppMediator struct {
 	pulseGateway       gateway.Pulse
 }
 
-func NewWhatsApp() WhatsApp {
+func NewWhatsApp(ctx context.Context) WhatsApp {
 	var whatsAppGateway gateway.WhatsApp
 	if server.GetEnvironment().Env != "development" {
 		whatsAppGateway = gateway.NewWhatsAppMock()
@@ -37,7 +37,7 @@ func NewWhatsApp() WhatsApp {
 
 	return &whatsAppMediator{
 		messageProduct:     "whatsapp",
-		whatsAppRepository: repository.NewWhatsApp(),
+		whatsAppRepository: repository.NewWhatsApp(ctx),
 		whatsAppGateway:    whatsAppGateway,
 		pulseGateway:       gateway.NewPulse(),
 	}

@@ -27,7 +27,6 @@ var (
 )
 
 func NewVariables(ctx context.Context) *variablesRepository {
-
 	variablesOnce.Do(func() {
 		variable = &variablesRepository{
 			connection: hmongo.GetConnection(ctx),

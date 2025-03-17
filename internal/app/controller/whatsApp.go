@@ -15,22 +15,23 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func NewWhatsApp(ctx context.Context) {
-	var (
-		whatsAppOnce sync.Once
-		whatsApp     *whatsAppController
-	)
+var (
+	_whatsAppControllerOnce sync.Once
+	_whatsAppController     *whatsAppController
+)
 
-	whatsAppOnce.Do(func() {
-		whatsApp = &whatsAppController{
+func NewWhatsApp(ctx context.Context) {
+
+	_whatsAppControllerOnce.Do(func() {
+		_whatsAppController = &whatsAppController{
 			rabbit:          broker.GetConnection(),
 			whatsAppService: service.NewWhatsApp(ctx),
 		}
 
-		whatsApp.StartTemplate(ctx)
-		whatsApp.SendMessage(ctx)
-		whatsApp.ChangeStatus(ctx)
-		whatsApp.ReceiveMessage(ctx)
+		_whatsAppController.StartTemplate(ctx)
+		_whatsAppController.SendMessage(ctx)
+		_whatsAppController.ChangeStatus(ctx)
+		_whatsAppController.ReceiveMessage(ctx)
 	})
 }
 

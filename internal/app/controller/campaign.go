@@ -13,21 +13,20 @@ import (
 	"github.com/streadway/amqp"
 )
 
+var (
+	_flowControllerOnce sync.Once
+	_flowController     *campaignController
+)
+
 func NewFlow(ctx context.Context) {
-
-	var (
-		controllerOnce sync.Once
-		controller     *campaignController
-	)
-
-	controllerOnce.Do(func() {
-		controller = &campaignController{
+	_flowControllerOnce.Do(func() {
+		_flowController = &campaignController{
 			rabbit:          broker.GetConnection(),
 			campaignService: service.NewCampaign(ctx),
 		}
 	})
 
-	controller.Init(ctx)
+	_flowController.Init(ctx)
 }
 
 type Campaign interface {

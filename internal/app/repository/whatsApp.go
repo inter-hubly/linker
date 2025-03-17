@@ -21,20 +21,19 @@ type whatsAppRepository struct {
 	index   string
 }
 
-func NewWhatsApp() *whatsAppRepository {
+var (
+	_whatsAppRepositoryOnce sync.Once
+	_whatsAppRepository     *whatsAppRepository
+)
 
-	var (
-		whatsAppOnce sync.Once
-		whatsApp     *whatsAppRepository
-	)
-
-	whatsAppOnce.Do(func() {
-		whatsApp = &whatsAppRepository{
+func NewWhatsApp(ctx context.Context) *whatsAppRepository {
+	_whatsAppRepositoryOnce.Do(func() {
+		_whatsAppRepository = &whatsAppRepository{
 			elastic: elasticsearch.GetConnection(),
 			index:   "whatsapp",
 		}
 	})
-	return whatsApp
+	return _whatsAppRepository
 }
 
 func (w *whatsAppRepository) PersistMessage(ctx context.Context, message *lentity.Chat) (string, error) {
