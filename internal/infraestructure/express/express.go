@@ -7,6 +7,7 @@ import (
 	rabbitmq "github.com/inter-hubly/pilot/broker"
 	"github.com/inter-hubly/pilot/database/elasticsearch"
 	"github.com/inter-hubly/pilot/database/hmongo"
+	"github.com/inter-hubly/pilot/database/hredis"
 	"github.com/inter-hubly/pilot/database/pgsql"
 	"github.com/inter-hubly/pilot/server"
 )
@@ -46,6 +47,11 @@ func Start(ctx context.Context) {
 			server.GetElasticSearch().Username,
 			server.GetElasticSearch().Password,
 		),
+	)
+
+	hredis.NewConnection(
+		ctx,
+		hredis.WithDatabase(1),
 	)
 
 	controller.NewWhatsApp(ctx)

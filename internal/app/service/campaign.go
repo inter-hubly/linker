@@ -21,20 +21,19 @@ type campaignService struct {
 }
 
 var (
-	campaignServiceOnce sync.Once
-	campaign            *campaignService
+	_campaignServiceOnce sync.Once
+	_campaignService     *campaignService
 )
 
 func NewCampaign(ctx context.Context) *campaignService {
-
-	campaignServiceOnce.Do(func() {
-		campaign = &campaignService{
+	_campaignServiceOnce.Do(func() {
+		_campaignService = &campaignService{
 			campaignRepository: repository.NewCampaign(ctx),
 			contactRepository:  repository.NewContact(ctx),
 			whatsAppService:    NewWhatsApp(ctx),
 		}
 	})
-	return campaign
+	return _campaignService
 }
 
 func (s *campaignService) StartCampaign(ctx context.Context, campaignId string) error {
@@ -43,6 +42,11 @@ func (s *campaignService) StartCampaign(ctx context.Context, campaignId string) 
 	if err != nil {
 		hlog.Error(ctx, "campaignService.StartCampaign", err.Error())
 		return err
+	}
+
+	if campaignDb.HasIaInteraction {
+		hlog.Debug(ctx, "campaignService.StartCampaign", "IaInteraction")
+
 	}
 
 	contacts, err := s.contactRepository.GetContactsById(ctx, campaignDb.ContactsId...)

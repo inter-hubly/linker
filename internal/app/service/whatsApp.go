@@ -100,7 +100,7 @@ func (w *whatsAppService) ReceiveMessage(ctx context.Context, dto *dto.WhatsAppJ
 		return err
 	}
 
-	if dto.NextId == "" {
+	if dto.NextId != "" {
 		messageToSend, err = w.flowService.Start(ctx, dto.NextId)
 		if err != nil {
 			return err
