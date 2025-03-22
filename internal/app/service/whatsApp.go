@@ -25,6 +25,7 @@ type whatsAppService struct {
 	whatsappMediator   mediator.WhatsApp
 	whatsappRepository repository.WhatsApp
 	campaignRepository repository.Campaign
+	iaContext          repository.IaContext
 	flowService        Flow
 }
 
@@ -39,6 +40,7 @@ func NewWhatsApp(ctx context.Context) *whatsAppService {
 			whatsappMediator:   mediator.NewWhatsApp(ctx),
 			whatsappRepository: repository.NewWhatsApp(ctx),
 			campaignRepository: repository.NewCampaign(ctx),
+			iaContext:          repository.NewIaContext(ctx),
 			flowService:        NewFlow(ctx),
 		}
 	})
@@ -88,31 +90,41 @@ func (w *whatsAppService) SendMessage(ctx context.Context, template *base.SendTe
 	return w.whatsappMediator.SendMessage(ctx, &message)
 }
 
-func (w *whatsAppService) ReceiveMessage(ctx context.Context, dto *dto.WhatsAppJSONReceived) error {
-	hlog.Debug(ctx, "whatsAppService.ReceiveMessage", fmt.Sprintf("%v", dto))
+func (w *whatsAppService) ReceiveMessage(ctx context.Context, receivedDto *dto.WhatsAppJSONReceived) error {
+	hlog.Debug(ctx, "whatsAppService.ReceiveMessage", fmt.Sprintf("%v", receivedDto))
 
 	var (
 		messageToSend string
 		err           error
+		iaContext     []dto.IaContext
 	)
 
-	if err = w.whatsappMediator.ReceiveMessage(ctx, dto); err != nil {
+	if err = w.whatsappMediator.ReceiveMessage(ctx, receivedDto); err != nil {
 		return err
 	}
 
-	if dto.NextId != "" {
-		messageToSend, err = w.flowService.Start(ctx, dto.NextId)
+	iaContext, err = w.iaContext.GetContext(ctx, receivedDto.Sender.PhoneNumberId)
+	if err == nil {
+		if _, err = w.iaContext.SaveContext(ctx, receivedDto.Sender.PhoneNumberId, &dto.IaContext{
+			Role:    "user",
+			Content: receivedDto.Metadata.Body,
+		}); err != nil {
+			return err
+		}
+		messageToSend, err = w.flowService.Start(ctx, iaContext)
 		if err != nil {
 			return err
 		}
 
 		err = w.SendMessage(ctx, &base.SendTextDto{
-			To:      dto.Sender.PhoneNumberId,
+			To:      receivedDto.Sender.PhoneNumberId,
 			Message: messageToSend,
 			IsOwner: true,
 		})
-
-		if err != nil {
+		if _, err = w.iaContext.SaveContext(ctx, receivedDto.Sender.PhoneNumberId, &dto.IaContext{
+			Role:    "assistant",
+			Content: messageToSend,
+		}); err != nil {
 			return err
 		}
 	}

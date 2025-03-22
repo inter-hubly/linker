@@ -30,7 +30,6 @@ type WhatsAppJSONReceived struct {
 	Sender      WhatsAppPhoneIdDto  `json:"sender,omitempty"`
 	Status      MessageStatus       `json:"status,omitempty"`
 	Metadata    WhatsAppMetadataDto `json:"metadata,omitempty"`
-	NextId      string              `json:"nextId,omitempty"`
 	Active      bool                `json:"active"`
 }
 

@@ -20,8 +20,13 @@ var (
 	_whatsAppController     *whatsAppController
 )
 
-func NewWhatsApp(ctx context.Context) {
+type whatsAppController struct {
+	exchange        string
+	rabbit          broker.Connection
+	whatsAppService service.WhatsApp
+}
 
+func NewWhatsApp(ctx context.Context) {
 	_whatsAppControllerOnce.Do(func() {
 		_whatsAppController = &whatsAppController{
 			rabbit:          broker.GetConnection(),
@@ -40,12 +45,6 @@ type WhatsApp interface {
 	SendMessage(ctx context.Context)
 	ChangeStatus(ctx context.Context)
 	ReceiveMessage(ctx context.Context)
-}
-
-type whatsAppController struct {
-	exchange        string
-	rabbit          broker.Connection
-	whatsAppService service.WhatsApp
 }
 
 func (w *whatsAppController) StartTemplate(ctx context.Context) {

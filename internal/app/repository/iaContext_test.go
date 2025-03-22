@@ -1,21 +1,38 @@
 package repository
 
 import (
-	"context"
 	"testing"
 
 	"github.com/inter-hubly/pilot/database/hredis"
+	"github.com/inter-hubly/pilot/hctx"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIaContext(t *testing.T) {
-	ctx := context.Background()
-	
+	ctx := hctx.Tenant.New("1234556")
 	hredis.NewConnection(ctx)
 	iaContextTestRepository := NewIaContext(ctx)
-	
-	
-	t.Run("test IaContextTestRepository", func(t *testing.T) {
-		iaContextTestRepository.
+
+	t.Run("save IaContextTestRepository", func(t *testing.T) {
+		saveContext, err := iaContextTestRepository.SaveContext(ctx, "12345", "ko2")
+		assert.Nil(t, err)
+		assert.NotNil(t, saveContext)
 	})
-	
+
+	t.Run("get all IaContextTestRepository", func(t *testing.T) {
+		saveContext, err := iaContextTestRepository.GetContext(ctx, "12345")
+		assert.Nil(t, err)
+		assert.NotEmpty(t, saveContext)
+	})
+
+	t.Run("get all IaContextTestRepository was error", func(t *testing.T) {
+		getAllMessages, err := iaContextTestRepository.GetContext(ctx, "12")
+		assert.NotNil(t, err)
+		assert.Empty(t, getAllMessages)
+	})
+
+	t.Run("start IaContextTestRepository", func(t *testing.T) {
+		err := iaContextTestRepository.StartContext(ctx, "123")
+		assert.Nil(t, err)
+	})
 }

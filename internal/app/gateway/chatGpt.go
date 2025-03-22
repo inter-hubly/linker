@@ -13,7 +13,7 @@ import (
 )
 
 type Chatgpt interface {
-	GetInformation(context.Context, string) (string, error)
+	GetInformation(context.Context, []dto.IaContext) (string, error)
 }
 
 type chatgpt struct {
@@ -32,12 +32,20 @@ func NewChatgpt(ctx context.Context) Chatgpt {
 	}
 }
 
-func (c *chatgpt) GetInformation(ctx context.Context, iaContext string) (string, error) {
+func (c *chatgpt) GetInformation(ctx context.Context, iaContext []dto.IaContext) (string, error) {
+
+	iaContextMessages := make([]dto.ChatGptMessage, 0, len(iaContext))
+	for _, v := range iaContext {
+		gptMessage := dto.ChatGptMessage{
+			Role:    v.Role,
+			Content: v.Content,
+		}
+		iaContextMessages = append(iaContextMessages, gptMessage)
+	}
+
 	gptBody := dto.SendChatGpt{
-		Model: c.model,
-		Messages: []dto.ChatGptMessage{
-			{"system", "Voce é um vendedor e precisa captar clientes"},
-		},
+		Model:    c.model,
+		Messages: iaContextMessages,
 	}
 	marshal, err := json.Marshal(gptBody)
 	if err != nil {

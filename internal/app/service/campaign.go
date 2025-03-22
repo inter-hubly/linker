@@ -18,6 +18,7 @@ type campaignService struct {
 	campaignRepository repository.Campaign
 	contactRepository  repository.Contact
 	whatsAppService    WhatsApp
+	iaContext          repository.IaContext
 }
 
 var (
@@ -31,6 +32,7 @@ func NewCampaign(ctx context.Context) *campaignService {
 			campaignRepository: repository.NewCampaign(ctx),
 			contactRepository:  repository.NewContact(ctx),
 			whatsAppService:    NewWhatsApp(ctx),
+			iaContext:          repository.NewIaContext(ctx),
 		}
 	})
 	return _campaignService
@@ -42,11 +44,6 @@ func (s *campaignService) StartCampaign(ctx context.Context, campaignId string) 
 	if err != nil {
 		hlog.Error(ctx, "campaignService.StartCampaign", err.Error())
 		return err
-	}
-
-	if campaignDb.HasIaInteraction {
-		hlog.Debug(ctx, "campaignService.StartCampaign", "IaInteraction")
-
 	}
 
 	contacts, err := s.contactRepository.GetContactsById(ctx, campaignDb.ContactsId...)
@@ -80,6 +77,14 @@ func (s *campaignService) StartCampaign(ctx context.Context, campaignId string) 
 			},
 			Parameters: userParameters,
 		})
+		if err == nil && campaignDb.HasIaInteraction {
+			hlog.Debug(ctx, "campaignService.StartCampaign", "IaInteraction")
+			if err = s.iaContext.StartContext(ctx, contact.Phone, campaignDb.IaContext); err != nil {
+				// TODO deve mandar uma mensagem para uma fila de erros
+				hlog.Error(ctx, "campaignService.StartCampaign", err.Error())
+			}
+		}
+
 	}
 	return nil
 }
