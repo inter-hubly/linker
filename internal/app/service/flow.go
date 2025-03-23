@@ -9,10 +9,11 @@ import (
 	"github.com/inter-hubly/linker/internal/app/gateway"
 	"github.com/inter-hubly/linker/internal/app/repository"
 	"github.com/inter-hubly/pilot/hlog"
+	"github.com/inter-hubly/pilot/server"
 )
 
 type Flow interface {
-	Start(ctx context.Context, iaContext []dto.IaContext) (string, error)
+	Start(ctx context.Context, iaMessage *dto.IaContext, iaContext []dto.IaContext) (string, error)
 }
 
 type flowService struct {
@@ -26,19 +27,26 @@ var (
 )
 
 func NewFlow(ctx context.Context) *flowService {
+	var chatGptGateway gateway.Chatgpt
+	if server.GetEnvironment().Env != "development" {
+		chatGptGateway = gateway.NewChatGptMock()
+	} else {
+		chatGptGateway = gateway.NewChatgpt(ctx)
+	}
+
 	_flowServiceOnce.Do(func() {
 		_flowService = &flowService{
 			flowRepository: repository.NewFlow(ctx),
-			chatgptGateway: gateway.NewChatgpt(ctx),
+			chatgptGateway: chatGptGateway,
 		}
 	})
 	return _flowService
 }
 
-func (s *flowService) Start(ctx context.Context, iaContext []dto.IaContext) (string, error) {
+func (s *flowService) Start(ctx context.Context, iaMessage *dto.IaContext, iaContext []dto.IaContext) (string, error) {
 	hlog.Debug(ctx, "flowService.Start", fmt.Sprint("Start flow with context count", len(iaContext)))
 
-	information, err := s.chatgptGateway.GetInformation(ctx, iaContext)
+	information, err := s.chatgptGateway.GetInformation(ctx, iaMessage, iaContext)
 	if err != nil {
 		hlog.Error(ctx, "flowService.Start", fmt.Sprint("Failed to get information from count ", len(iaContext)))
 		return "", err

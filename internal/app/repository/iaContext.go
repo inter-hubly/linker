@@ -41,7 +41,7 @@ func NewIaContext(ctx context.Context) *iaContextRepository {
 func (r *iaContextRepository) StartContext(ctx context.Context, senderId, iaCompanyContext string) error {
 	hlog.Debug(ctx, "iaContextRepository.StartContext", fmt.Sprintf("start ia context %s", senderId))
 	if _, err := r.SaveContext(ctx, senderId, &dto.IaContext{
-		Role:    "developer",
+		Role:    "system",
 		Content: iaCompanyContext,
 	}); err != nil {
 		return err

@@ -164,16 +164,6 @@ func (w *whatsAppMediator) sendMessageToWhatsApp(ctx context.Context, ownerId st
 	return whatsId, nil
 }
 
-const (
-	SendError    = "SendError"
-	PersistError = "PersistError"
-)
-
-type errValue struct {
-	errType string
-	err     error
-}
-
 func (w *whatsAppMediator) createTextMessage(ctx context.Context, to, body string) *dto.GatewayWhatsAppMessageDto {
 	return &dto.GatewayWhatsAppMessageDto{
 		MessagingProduct: w.messageProduct,
