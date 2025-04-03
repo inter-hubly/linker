@@ -1,3 +1,5 @@
+//go:generate mockgen -source=whatsapp.go -destination=mocks/whatsapp_mock.go -package=mocks
+
 package repository
 
 import (

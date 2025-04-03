@@ -1,3 +1,5 @@
+//go:generate mockgen -source=flow.go -destination=mocks/flow_mock.go -package=mocks
+
 package repository
 
 import (

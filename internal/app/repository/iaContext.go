@@ -1,3 +1,5 @@
+//go:generate mockgen -source=iaContext.go -destination=mocks/iaContext_mock.go -package=mocks
+
 package repository
 
 import (

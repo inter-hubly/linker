@@ -1,3 +1,5 @@
+//go:generate mockgen -source=variables.go -destination=mocks/variables_mock.go -package=mocks
+
 package repository
 
 import (

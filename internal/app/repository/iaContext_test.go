@@ -3,6 +3,7 @@ package repository
 import (
 	"testing"
 
+	"github.com/inter-hubly/linker/internal/app/domain/dto"
 	"github.com/inter-hubly/pilot/database/hredis"
 	"github.com/inter-hubly/pilot/hctx"
 	"github.com/stretchr/testify/assert"
@@ -14,7 +15,7 @@ func TestIaContext(t *testing.T) {
 	iaContextTestRepository := NewIaContext(ctx)
 
 	t.Run("save IaContextTestRepository", func(t *testing.T) {
-		saveContext, err := iaContextTestRepository.SaveContext(ctx, "12345", "ko2")
+		saveContext, err := iaContextTestRepository.SaveContext(ctx, "12345", &dto.IaContext{Content: "test"})
 		assert.Nil(t, err)
 		assert.NotNil(t, saveContext)
 	})
@@ -32,7 +33,7 @@ func TestIaContext(t *testing.T) {
 	})
 
 	t.Run("start IaContextTestRepository", func(t *testing.T) {
-		err := iaContextTestRepository.StartContext(ctx, "123")
+		err := iaContextTestRepository.StartContext(ctx, "123", "test")
 		assert.Nil(t, err)
 	})
 }

@@ -32,6 +32,7 @@ func Start(ctx context.Context) {
 	}
 
 	pgsql.NewConnection(
+		ctx,
 		pgsql.WithUrl(server.GetPgsqlConfig().Host),
 	)
 

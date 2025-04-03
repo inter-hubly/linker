@@ -32,7 +32,7 @@ func NewWhatsApp(ctx context.Context) WhatsApp {
 	if server.GetEnvironment().Env != "development" {
 		whatsAppGateway = gateway.NewWhatsAppMock()
 	} else {
-		whatsAppGateway = gateway.NewWhatsApp()
+		whatsAppGateway = gateway.NewWhatsApp(ctx)
 	}
 
 	return &whatsAppMediator{

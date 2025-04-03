@@ -10,7 +10,7 @@ import (
 
 func TestFindManyContact(t *testing.T) {
 	ctx := context.Background()
-	pgsql.NewConnection(pgsql.WithUrl("postgres://postgres:frajolinha202@localhost:5432/hubly?sslmode=disable"))
+	pgsql.NewConnection(ctx, pgsql.WithUrl("postgres://postgres:frajolinha202@localhost:5432/hubly?sslmode=disable"))
 	ct := NewContact(ctx)
 
 	contacts, err := ct.GetContactsById(ctx, "1", "2")
