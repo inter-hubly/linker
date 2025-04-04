@@ -28,18 +28,22 @@ func TestClient(t *testing.T) {
 
 	for _, v := range []struct {
 		testName string
+		auxFunc  func()
 	}{
 		{
 			testName: "Need to get a client",
+			auxFunc: func() {
+				insertedId := setUp(ctx, t, repository.connection)
+				phoneNumberId := "5548"
+				clientEntity, err := repository.GetClientByPhoneNumberId(ctx, phoneNumberId)
+				assert.Nil(t, err)
+				assert.Equal(t, insertedId, clientEntity.Id)
+				assert.Equal(t, phoneNumberId, clientEntity.PhoneNumberId)
+			},
 		},
 	} {
 		t.Run(v.testName, func(t *testing.T) {
-			insertedId := setUp(ctx, t, repository.connection)
-			phoneNumberId := "5548"
-			clientEntity, err := repository.GetClientByPhoneNumberId(ctx, phoneNumberId)
-			assert.Nil(t, err)
-			assert.Equal(t, insertedId, clientEntity.Id)
-			assert.Equal(t, phoneNumberId, clientEntity.PhoneNumberId)
+			v.auxFunc()
 		})
 	}
 }
