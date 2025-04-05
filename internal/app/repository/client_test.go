@@ -16,11 +16,14 @@ func TestClient(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	pgsql.NewConnection(
-		ctx,
-		pgsql.WithUrl(host),
-	)
 	defer close(ctx)
+
+	if pgsql.GetConnection(ctx) == nil {
+		pgsql.NewConnection(
+			ctx,
+			pgsql.WithUrl(host),
+		)
+	}
 
 	repository := clientRepository{
 		connection: pgsql.GetConnection(ctx),

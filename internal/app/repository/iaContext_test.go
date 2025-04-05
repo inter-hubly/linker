@@ -11,8 +11,14 @@ import (
 
 func TestIaContext(t *testing.T) {
 	ctx := hctx.Tenant.New("1234556")
-	hredis.NewConnection(ctx)
-	iaContextTestRepository := NewIaContext(ctx)
+
+	if hredis.GetConnection(ctx) == nil {
+		hredis.NewConnection(ctx)
+	}
+
+	iaContextTestRepository := iaContextRepository{
+		connection: hredis.GetConnection(ctx),
+	}
 
 	t.Run("save IaContextTestRepository", func(t *testing.T) {
 		saveContext, err := iaContextTestRepository.SaveContext(ctx, "12345", &dto.IaContext{Content: "test"})

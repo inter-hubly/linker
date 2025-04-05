@@ -19,12 +19,15 @@ func TestFindManyContact(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	hmongo.NewConnection(
-		ctx,
-		hmongo.WithDatabase("test"),
-		hmongo.WithUrl(host),
-	)
 	defer close(ctx)
+
+	if hmongo.GetConnection(ctx) == nil {
+		hmongo.NewConnection(
+			ctx,
+			hmongo.WithDatabase("test"),
+			hmongo.WithUrl(host),
+		)
+	}
 
 	repository := contactRepository{
 		connection: hmongo.GetConnection(ctx),

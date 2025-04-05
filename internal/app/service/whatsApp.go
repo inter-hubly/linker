@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/inter-hubly/linker/internal/app/domain/dto"
+	"github.com/inter-hubly/linker/internal/app/gateway"
 	"github.com/inter-hubly/linker/internal/app/mediator"
 	"github.com/inter-hubly/linker/internal/app/repository"
 	"github.com/inter-hubly/pilot/domain/base"
@@ -26,7 +27,7 @@ type whatsAppService struct {
 	whatsappRepository repository.WhatsApp
 	campaignRepository repository.Campaign
 	iaContext          repository.IaContext
-	flowService        Flow
+	chatGptGateway     gateway.Chatgpt
 }
 
 var (
@@ -41,7 +42,7 @@ func NewWhatsApp(ctx context.Context) *whatsAppService {
 			whatsappRepository: repository.NewWhatsApp(ctx),
 			campaignRepository: repository.NewCampaign(ctx),
 			iaContext:          repository.NewIaContext(ctx),
-			flowService:        NewFlow(ctx),
+			chatGptGateway:     gateway.NewChatgpt(ctx),
 		}
 	})
 	return _whatsAppService
@@ -120,7 +121,7 @@ func (w *whatsAppService) createAiResponse(ctx context.Context, receivedDto *dto
 		return err
 	}
 
-	messageToSend, err = w.flowService.Start(ctx, iaContextMessage, iaContext)
+	messageToSend, err = w.chatGptGateway.GetInformation(ctx, iaContextMessage, iaContext)
 	if err != nil {
 		return err
 	}
