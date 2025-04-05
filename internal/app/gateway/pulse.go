@@ -17,8 +17,8 @@ type Pulse interface {
 }
 
 var (
-	pulseOnce sync.Once
-	pulse     *pulseGateway
+	_pulseGatewayOnce sync.Once
+	_pulseGateway     *pulseGateway
 )
 
 type pulseGateway struct {
@@ -26,12 +26,12 @@ type pulseGateway struct {
 }
 
 func NewPulse() *pulseGateway {
-	pulseOnce.Do(func() {
-		pulse = &pulseGateway{
+	_pulseGatewayOnce.Do(func() {
+		_pulseGateway = &pulseGateway{
 			url: server.GetGatewayHost().PulseHost,
 		}
 	})
-	return pulse
+	return _pulseGateway
 }
 
 func (p *pulseGateway) HandleMessage(ctx context.Context, ownerId string, message *dto.PulseDto) error {

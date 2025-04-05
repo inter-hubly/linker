@@ -3,12 +3,10 @@ package gateway
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"sync"
 
 	"github.com/inter-hubly/linker/internal/app/domain/dto"
 	"github.com/inter-hubly/pilot/hlog"
-	"github.com/inter-hubly/pilot/hrest"
 	"github.com/inter-hubly/pilot/server"
 )
 
@@ -16,36 +14,36 @@ type whatsAppGatewayMock struct {
 	url string
 }
 
-func NewWhatsAppMock() *whatsAppGatewayMock {
-	var (
-		whatsAppOnce sync.Once
-		whatsApp     *whatsAppGatewayMock
-	)
+var (
+	_whatsAppGatewayMockOnce sync.Once
+	_whatsAppGatewayMock     *whatsAppGatewayMock
+)
 
-	whatsAppOnce.Do(func() {
-		whatsApp = &whatsAppGatewayMock{
+func NewWhatsAppMock() *whatsAppGatewayMock {
+	_whatsAppGatewayMockOnce.Do(func() {
+		_whatsAppGatewayMock = &whatsAppGatewayMock{
 			url: server.GetGatewayHost().WebhookHost,
 		}
 	})
-	return whatsApp
+	return _whatsAppGatewayMock
 }
 
 func (w whatsAppGatewayMock) SendMessage(ctx context.Context, phoneNumberId string, messageDto *dto.GatewayWhatsAppMessageDto) (*dto.ResponseWhatsAppGateway, error) {
 	hlog.Debug(ctx, "whatsAppGatewayMock.SendMessage", fmt.Sprintf("Send Mock Message %v", messageDto))
 
-	smsBody := "test"
-	if messageDto != nil && messageDto.Text != nil {
-		smsBody = messageDto.Text.Body
-	}
-	entryMessage := newWhatsAppEntry(smsBody, messageDto.To, phoneNumberId, messageDto.To, phoneNumberId)
-	request := hrest.NewRequest(fmt.Sprintf("%s/webhook", w.url),
-		hrest.WithBody(entryMessage),
-	)
+	// smsBody := "test"
+	// if messageDto != nil && messageDto.Text != nil {
+	// 	smsBody = messageDto.Text.Body
+	// }
+	// entryMessage := newWhatsAppEntry(smsBody, messageDto.To, phoneNumberId, messageDto.To, phoneNumberId)
+	// request := hrest.NewRequest(fmt.Sprintf("%s/webhook", w.url),
+	// 	hrest.WithBody(entryMessage),
+	// )
 
-	if err := request.CreateRequest(ctx, http.MethodPost); err != nil {
-		hlog.Error(ctx, "whatsAppGatewayMock.SendMessage", fmt.Sprintf("Failed to send message %v", messageDto))
-		return nil, err
-	}
+	// if err := request.CreateRequest(ctx, http.MethodPost); err != nil {
+	// 	hlog.Error(ctx, "whatsAppGatewayMock.SendMessage", fmt.Sprintf("Failed to send message %v", messageDto))
+	// 	return nil, err
+	// }
 
 	return &dto.ResponseWhatsAppGateway{
 		Messages: []dto.Message{

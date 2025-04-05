@@ -1,3 +1,5 @@
+//go:generate mockgen -source=variables.go -destination=mocks/variables_mock.go -package=mocks
+
 package repository
 
 import (
@@ -27,7 +29,6 @@ var (
 )
 
 func NewVariables(ctx context.Context) *variablesRepository {
-
 	variablesOnce.Do(func() {
 		variable = &variablesRepository{
 			connection: hmongo.GetConnection(ctx),

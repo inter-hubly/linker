@@ -2,7 +2,7 @@
 // Source: /home/saimon/Documents/Hubly/linker/internal/repository/whatsApp.go
 
 // Package repository is a generated GoMock package.
-package repository
+package mocks
 
 import (
 	context "context"

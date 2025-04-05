@@ -1,3 +1,5 @@
+//go:generate mockgen -source=campaign.go -destination=mocks/campaign_mock.go -package=mocks
+
 package repository
 
 import (
@@ -7,6 +9,7 @@ import (
 
 	"github.com/inter-hubly/pilot/database/hmongo"
 	"github.com/inter-hubly/pilot/domain/entity"
+	"github.com/inter-hubly/pilot/hctx"
 	"github.com/inter-hubly/pilot/hlog"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -40,6 +43,7 @@ func NewCampaign(ctx context.Context) *campaignRepository {
 func (r *campaignRepository) GetCampaignById(ctx context.Context, campaignId string) (*entity.Campaign, error) {
 	hlog.Debug(ctx, "campaignRepository.GetCampaignById", fmt.Sprintf("campaignId: %s", campaignId))
 	var camp entity.Campaign
+	tenantId := hctx.Tenant.Get(ctx)
 
 	objID, err := primitive.ObjectIDFromHex(campaignId)
 	if err != nil {
@@ -49,7 +53,8 @@ func (r *campaignRepository) GetCampaignById(ctx context.Context, campaignId str
 
 	if err = r.connection.GetCollection(ctx, r.collection).FindOne(ctx,
 		bson.M{
-			"_id": objID,
+			"_id":      objID,
+			"tenantId": tenantId,
 		},
 	).Decode(&camp); err != nil {
 		hlog.Error(ctx, "campaignRepository.GetCampaignById", fmt.Sprintf("campaignId: %s", campaignId))

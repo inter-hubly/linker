@@ -25,16 +25,16 @@ type whatsAppGateway struct {
 	clientRepository repository.Client
 }
 
-func NewWhatsApp() *whatsAppGateway {
-	var (
-		whatsAppOnce sync.Once
-		whatsApp     *whatsAppGateway
-	)
+var (
+	whatsAppOnce sync.Once
+	whatsApp     *whatsAppGateway
+)
 
+func NewWhatsApp(ctx context.Context) *whatsAppGateway {
 	whatsAppOnce.Do(func() {
 		whatsApp = &whatsAppGateway{
 			url:              "https://graph.facebook.com/v21.0/",
-			clientRepository: repository.NewClient(),
+			clientRepository: repository.NewClient(ctx),
 		}
 	})
 	return whatsApp
@@ -47,7 +47,7 @@ func (w *whatsAppGateway) SendMessage(
 ) (*dto.ResponseWhatsAppGateway, error) {
 	hlog.Debug(ctx, "whatsAppGateway.SendMessage", fmt.Sprintf("Send Message %v", messageDto))
 
-	client, err := w.clientRepository.GetClientById(ctx, phoneNumberId)
+	client, err := w.clientRepository.GetClientByPhoneNumberId(ctx, phoneNumberId)
 	if err != nil {
 		return nil, err
 	}

@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/inter-hubly/linker/internal/app/domain/dto"
+	"github.com/inter-hubly/linker/internal/app/gateway"
 	"github.com/inter-hubly/linker/internal/app/mediator"
 	"github.com/inter-hubly/linker/internal/app/repository"
 	"github.com/inter-hubly/pilot/domain/base"
@@ -25,23 +26,26 @@ type whatsAppService struct {
 	whatsappMediator   mediator.WhatsApp
 	whatsappRepository repository.WhatsApp
 	campaignRepository repository.Campaign
+	iaContext          repository.IaContext
+	chatGptGateway     gateway.Chatgpt
 }
 
 var (
-	whatsAppServiceOnce sync.Once
-	whatsApp            *whatsAppService
+	_whatsAppServiceOnce sync.Once
+	_whatsAppService     *whatsAppService
 )
 
 func NewWhatsApp(ctx context.Context) *whatsAppService {
-
-	whatsAppServiceOnce.Do(func() {
-		whatsApp = &whatsAppService{
-			whatsappMediator:   mediator.NewWhatsApp(),
-			whatsappRepository: repository.NewWhatsApp(),
+	_whatsAppServiceOnce.Do(func() {
+		_whatsAppService = &whatsAppService{
+			whatsappMediator:   mediator.NewWhatsApp(ctx),
+			whatsappRepository: repository.NewWhatsApp(ctx),
 			campaignRepository: repository.NewCampaign(ctx),
+			iaContext:          repository.NewIaContext(ctx),
+			chatGptGateway:     gateway.NewChatgpt(ctx),
 		}
 	})
-	return whatsApp
+	return _whatsAppService
 }
 
 func (w *whatsAppService) StartTemplate(ctx context.Context, template *base.StartTemplateDto) error {
@@ -71,7 +75,6 @@ func (w *whatsAppService) StartTemplate(ctx context.Context, template *base.Star
 
 func (w *whatsAppService) SendMessage(ctx context.Context, template *base.SendTextDto) error {
 	hlog.Debug(ctx, "whatsAppService.SendMessage", fmt.Sprintf("%v", template))
-
 	tenantId := hctx.Tenant.Get(ctx)
 	message := dto.WhatsAppJSONReceived{
 		Owner: dto.WhatsAppPhoneIdDto{
@@ -88,10 +91,51 @@ func (w *whatsAppService) SendMessage(ctx context.Context, template *base.SendTe
 	return w.whatsappMediator.SendMessage(ctx, &message)
 }
 
-func (w *whatsAppService) ReceiveMessage(ctx context.Context, dto *dto.WhatsAppJSONReceived) error {
-	hlog.Debug(ctx, "whatsAppService.ReceiveMessage", fmt.Sprintf("%v", dto))
+func (w *whatsAppService) ReceiveMessage(ctx context.Context, receivedDto *dto.WhatsAppJSONReceived) error {
+	hlog.Debug(ctx, "whatsAppService.ReceiveMessage", fmt.Sprintf("%v", receivedDto))
 
-	if err := w.whatsappMediator.ReceiveMessage(ctx, dto); err != nil {
+	if err := w.whatsappMediator.ReceiveMessage(ctx, receivedDto); err != nil {
+		return err
+	}
+
+	iaContext, err := w.iaContext.GetContext(ctx, receivedDto.Sender.PhoneNumberId)
+	if err == nil {
+		return w.createAiResponse(ctx, receivedDto, iaContext)
+	}
+
+	return nil
+}
+
+func (w *whatsAppService) createAiResponse(ctx context.Context, receivedDto *dto.WhatsAppJSONReceived, iaContext []dto.IaContext) error {
+	var (
+		messageToSend string
+		err           error
+	)
+
+	iaContextMessage := &dto.IaContext{
+		Role:    "user",
+		Content: receivedDto.Metadata.Body,
+	}
+
+	if _, err = w.iaContext.SaveContext(ctx, receivedDto.Sender.PhoneNumberId, iaContextMessage); err != nil {
+		return err
+	}
+
+	messageToSend, err = w.chatGptGateway.GetInformation(ctx, iaContextMessage, iaContext)
+	if err != nil {
+		return err
+	}
+
+	err = w.SendMessage(ctx, &base.SendTextDto{
+		To:      receivedDto.Sender.PhoneNumberId,
+		Message: messageToSend,
+		IsOwner: true,
+	})
+
+	if _, err = w.iaContext.SaveContext(ctx, receivedDto.Sender.PhoneNumberId, &dto.IaContext{
+		Role:    "assistant",
+		Content: messageToSend,
+	}); err != nil {
 		return err
 	}
 
