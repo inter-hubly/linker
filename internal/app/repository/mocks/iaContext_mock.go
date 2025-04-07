@@ -9,49 +9,49 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	dto "github.com/inter-hubly/linker/internal/app/domain/dto"
+	entity "github.com/inter-hubly/pilot/domain/entity"
 )
 
-// MockIaContext is a mock of IaContext interface.
-type MockIaContext struct {
+// MockFlowContext is a mock of FlowContext interface.
+type MockFlowContext struct {
 	ctrl     *gomock.Controller
-	recorder *MockIaContextMockRecorder
+	recorder *MockFlowContextMockRecorder
 }
 
-// MockIaContextMockRecorder is the mock recorder for MockIaContext.
-type MockIaContextMockRecorder struct {
-	mock *MockIaContext
+// MockFlowContextMockRecorder is the mock recorder for MockFlowContext.
+type MockFlowContextMockRecorder struct {
+	mock *MockFlowContext
 }
 
-// NewMockIaContext creates a new mock instance.
-func NewMockIaContext(ctrl *gomock.Controller) *MockIaContext {
-	mock := &MockIaContext{ctrl: ctrl}
-	mock.recorder = &MockIaContextMockRecorder{mock}
+// NewMockFlowContext creates a new mock instance.
+func NewMockFlowContext(ctrl *gomock.Controller) *MockFlowContext {
+	mock := &MockFlowContext{ctrl: ctrl}
+	mock.recorder = &MockFlowContextMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockIaContext) EXPECT() *MockIaContextMockRecorder {
+func (m *MockFlowContext) EXPECT() *MockFlowContextMockRecorder {
 	return m.recorder
 }
 
 // GetContext mocks base method.
-func (m *MockIaContext) GetContext(ctx context.Context, senderId string) ([]dto.IaContext, error) {
+func (m *MockFlowContext) GetContext(ctx context.Context, senderId string) ([]entity.Flow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetContext", ctx, senderId)
-	ret0, _ := ret[0].([]dto.IaContext)
+	ret0, _ := ret[0].([]entity.Flow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetContext indicates an expected call of GetContext.
-func (mr *MockIaContextMockRecorder) GetContext(ctx, senderId interface{}) *gomock.Call {
+func (mr *MockFlowContextMockRecorder) GetContext(ctx, senderId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetContext", reflect.TypeOf((*MockIaContext)(nil).GetContext), ctx, senderId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetContext", reflect.TypeOf((*MockFlowContext)(nil).GetContext), ctx, senderId)
 }
 
 // SaveContext mocks base method.
-func (m *MockIaContext) SaveContext(ctx context.Context, senderId string, iaCompanyContext *dto.IaContext) (string, error) {
+func (m *MockFlowContext) SaveContext(ctx context.Context, senderId string, iaCompanyContext *entity.Flow) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveContext", ctx, senderId, iaCompanyContext)
 	ret0, _ := ret[0].(string)
@@ -60,21 +60,21 @@ func (m *MockIaContext) SaveContext(ctx context.Context, senderId string, iaComp
 }
 
 // SaveContext indicates an expected call of SaveContext.
-func (mr *MockIaContextMockRecorder) SaveContext(ctx, senderId, iaCompanyContext interface{}) *gomock.Call {
+func (mr *MockFlowContextMockRecorder) SaveContext(ctx, senderId, iaCompanyContext interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveContext", reflect.TypeOf((*MockIaContext)(nil).SaveContext), ctx, senderId, iaCompanyContext)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveContext", reflect.TypeOf((*MockFlowContext)(nil).SaveContext), ctx, senderId, iaCompanyContext)
 }
 
 // StartContext mocks base method.
-func (m *MockIaContext) StartContext(ctx context.Context, senderId, iaCompanyContext string) error {
+func (m *MockFlowContext) StartContext(ctx context.Context, senderId string, flowContext *entity.Flow) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StartContext", ctx, senderId, iaCompanyContext)
+	ret := m.ctrl.Call(m, "StartContext", ctx, senderId, flowContext)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StartContext indicates an expected call of StartContext.
-func (mr *MockIaContextMockRecorder) StartContext(ctx, senderId, iaCompanyContext interface{}) *gomock.Call {
+func (mr *MockFlowContextMockRecorder) StartContext(ctx, senderId, flowContext interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartContext", reflect.TypeOf((*MockIaContext)(nil).StartContext), ctx, senderId, iaCompanyContext)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartContext", reflect.TypeOf((*MockFlowContext)(nil).StartContext), ctx, senderId, flowContext)
 }

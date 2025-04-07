@@ -50,16 +50,31 @@ var jsonReceived = `{
 }`
 
 // {
-//  "to": "5548991784586",
-//  "CampaignId": "DkxNzg0NTg2FQIAEhgWM0",
-//  "parameters": [
-//    {
-//      "key": "text",
-//      "value": "Saimon"
-//    },
-//    {
-//      "key": "text",
-//      "value": "12,20"
-//    }
-//  ]
+// "id":"67ec6ea0e58c687402ed07bf"
+// }
+
+// MENSAGEM DE RETORNO
+// tenantId: 459185417288378
+// {
+// "id": "msg-123",
+// "messageType": "text",
+// "owner": {
+// "phoneNumberId": "0987654321",
+// "profileName": "Empresa XYZ"
+// },
+// "sender": {
+// "phoneNumberId": "554891784586",
+// "profileName": "Cliente João"
+// },
+// "status": "delivered",
+// "metadata": {
+// "expirationTimeStamp": "2025-04-06T00:00:00Z",
+// "timestamp": "2025-04-05T23:00:00Z",
+// "conversationId": "conv-abc-001",
+// "originType": "user",
+// "messageId": "wamid.HBgMNTU2NjY2NjY2NjY2FQIAEhggMTIzNDU2Nzg5MA==",
+// "body": "Olá, tudo bem?",
+// "bodyLength": 16
+// },
+// "active": true
 // }

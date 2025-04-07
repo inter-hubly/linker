@@ -1,3 +1,5 @@
+//go:generate mockgen -source=campaign.go -destination=mocks/campaign_mock.go -package=mocks
+
 package service
 
 import (
@@ -5,6 +7,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/inter-hubly/linker/internal/app/cache"
 	"github.com/inter-hubly/linker/internal/app/repository"
 	"github.com/inter-hubly/pilot/domain/base"
 	"github.com/inter-hubly/pilot/domain/valueobject"
@@ -18,7 +21,7 @@ type campaignService struct {
 	campaignRepository repository.Campaign
 	contactRepository  repository.Contact
 	whatsAppService    WhatsApp
-	iaContext          repository.IaContext
+	campaignCache      cache.Campaign
 }
 
 var (
@@ -32,7 +35,7 @@ func NewCampaign(ctx context.Context) *campaignService {
 			campaignRepository: repository.NewCampaign(ctx),
 			contactRepository:  repository.NewContact(ctx),
 			whatsAppService:    NewWhatsApp(ctx),
-			iaContext:          repository.NewIaContext(ctx),
+			campaignCache:      cache.NewCampaign(ctx),
 		}
 	})
 	return _campaignService
@@ -77,9 +80,10 @@ func (s *campaignService) StartCampaign(ctx context.Context, campaignId string) 
 			},
 			Parameters: userParameters,
 		})
-		if err == nil && campaignDb.HasIaInteraction {
-			hlog.Debug(ctx, "campaignService.StartCampaign", "IaInteraction")
-			if err = s.iaContext.StartContext(ctx, contact.Phone, campaignDb.IaContext); err != nil {
+
+		if err == nil && campaignDb.Flows != nil {
+			hlog.Debug(ctx, "campaignService.StartCampaign", "Starting flow context")
+			if err = s.campaignCache.SaveCampaign(ctx, contact.Phone, campaignDb); err != nil {
 				// TODO deve mandar uma mensagem para uma fila de erros
 				hlog.Error(ctx, "campaignService.StartCampaign", err.Error())
 			}

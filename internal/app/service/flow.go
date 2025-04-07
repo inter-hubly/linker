@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/inter-hubly/linker/internal/app/domain/dto"
 	"github.com/inter-hubly/linker/internal/app/gateway"
 	"github.com/inter-hubly/linker/internal/app/repository"
+	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/hlog"
 	"github.com/inter-hubly/pilot/server"
 )
 
 type Flow interface {
-	Start(ctx context.Context, iaMessage *dto.IaContext, iaContext []dto.IaContext) (string, error)
+	Start(ctx context.Context, iaMessage *entity.Flow, iaContext []entity.Flow) (string, error)
 }
 
 type flowService struct {
@@ -43,7 +43,7 @@ func NewFlow(ctx context.Context) *flowService {
 	return _flowService
 }
 
-func (s *flowService) Start(ctx context.Context, iaMessage *dto.IaContext, iaContext []dto.IaContext) (string, error) {
+func (s *flowService) Start(ctx context.Context, iaMessage *entity.Flow, iaContext []entity.Flow) (string, error) {
 	hlog.Debug(ctx, "flowService.Start", fmt.Sprint("Start flow with context count", len(iaContext)))
 
 	information, err := s.chatgptGateway.GetInformation(ctx, iaMessage, iaContext)

@@ -1,10 +1,10 @@
-package repository
+package cache
 
 import (
 	"testing"
 
-	"github.com/inter-hubly/linker/internal/app/domain/dto"
 	"github.com/inter-hubly/pilot/database/hredis"
+	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/hctx"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,12 +16,12 @@ func TestIaContext(t *testing.T) {
 		hredis.NewConnection(ctx)
 	}
 
-	iaContextTestRepository := iaContextRepository{
+	iaContextTestRepository := flowContextRepository{
 		connection: hredis.GetConnection(ctx),
 	}
 
 	t.Run("save IaContextTestRepository", func(t *testing.T) {
-		saveContext, err := iaContextTestRepository.SaveContext(ctx, "12345", &dto.IaContext{Content: "test"})
+		saveContext, err := iaContextTestRepository.SaveContext(ctx, "12345", &entity.Flow{Message: "test"})
 		assert.Nil(t, err)
 		assert.NotNil(t, saveContext)
 	})
@@ -39,7 +39,7 @@ func TestIaContext(t *testing.T) {
 	})
 
 	t.Run("start IaContextTestRepository", func(t *testing.T) {
-		err := iaContextTestRepository.StartContext(ctx, "123", "test")
+		err := iaContextTestRepository.StartContext(ctx, "123", &entity.Flow{Message: "test"})
 		assert.Nil(t, err)
 	})
 }

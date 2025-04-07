@@ -10,10 +10,11 @@ import (
 	"net/http"
 
 	"github.com/inter-hubly/linker/internal/app/domain/dto"
+	"github.com/inter-hubly/pilot/domain/entity"
 )
 
 type Chatgpt interface {
-	GetInformation(context.Context, *dto.IaContext, []dto.IaContext) (string, error)
+	GetInformation(context.Context, *entity.Flow, []entity.Flow) (string, error)
 }
 
 type chatgpt struct {
@@ -32,20 +33,20 @@ func NewChatgpt(ctx context.Context) Chatgpt {
 	}
 }
 
-func (c *chatgpt) GetInformation(ctx context.Context, iaMessage *dto.IaContext, iaContext []dto.IaContext) (string, error) {
+func (c *chatgpt) GetInformation(ctx context.Context, iaMessage *entity.Flow, iaContext []entity.Flow) (string, error) {
 
 	iaContextMessages := make([]dto.ChatGptMessage, 0, len(iaContext))
 	for _, v := range iaContext {
 		gptMessage := dto.ChatGptMessage{
 			Role:    v.Role,
-			Content: v.Content,
+			Content: v.Message,
 		}
 		iaContextMessages = append(iaContextMessages, gptMessage)
 	}
 
 	iaContextMessages = append(iaContextMessages, dto.ChatGptMessage{
 		Role:    iaMessage.Role,
-		Content: iaMessage.Content,
+		Content: iaMessage.Message,
 	})
 
 	gptBody := dto.SendChatGpt{

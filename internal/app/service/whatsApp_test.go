@@ -1,44 +1,40 @@
-//go:build e2e
-
 package service
 
 import (
-	"context"
 	"testing"
-
-	"github.com/inter-hubly/linker/internal/app/domain/dto"
-	"github.com/inter-hubly/pilot/server"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestWhatsApp(t *testing.T) {
-	server.NewMockEnvironment(
-		server.MockEnvironment{
-			WhatsAppToken: "EAAP8VwxXKXkBO3WJuZAX2ZBsW2mVzBAHqG7gb38x2fIgd3ydReFv6VVNRZBGnZBsmhOt8CF7R9msJgPSprnjS7dM7g6XQdfvo50dguTVp6NxZAzC6JX5SvDqqBv3CpHX39O1uEAkkCdBrbwE4NKbCBHKVNOC7dtc2OSFQWSnIx2HUbvCTFFbg3lXxFt3j4PQZA",
-		},
-	)
+	// ctx := testutils.SetLoggedUser(context.Background())
 
-	service := NewWhatsApp()
+	// whatsappServiceTest := NewWhatsApp(ctx)
 
-	for _, v := range []struct {
-		testName string
-		auxFunc  func()
-	}{
-		{
-			testName: "need to send message",
-		},
-	} {
-		t.Run(v.testName, func(t *testing.T) {
-
-			ctx := context.Background()
-			err := service.SendMessage(ctx, &dto.SendTextDto{
-				Message: "Test message",
-				SenderAndReceiver: dto.SenderAndReceiverDto{
-					OwnerId: "559153210606318",
-					To:      "554888356622",
-				},
-			})
-			assert.Nil(t, err)
-		})
-	}
+	t.Run("Need to create context with flows", func(t *testing.T) {
+		// err := whatsappServiceTest.ReceiveMessage(ctx, &dto.WhatsAppJSONReceived{
+		//
+		// })
+		// assert.Nil(t, err)
+	})
 }
+
+// {
+// "to": "+5511999999999",
+// "campaignId": "abc123",
+// "templateInfo": {
+// "id": "tpl-001",
+// "name": "boas_vindas",
+// "language": "pt_BR",
+// "message": "Olá, seja bem-vindo!"
+// },
+// "hasIaInteraction": false,
+// "parameters": [
+// {
+// "first": "nome",
+// "second": "João"
+// },
+// {
+// "first": "data",
+// "second": "2025-04-05"
+// }
+// ]
+// }

@@ -35,17 +35,17 @@ func (m *MockClient) EXPECT() *MockClientMockRecorder {
 	return m.recorder
 }
 
-// GetClientById mocks base method.
-func (m *MockClient) GetClientById(ctx context.Context, clientId string) (*entity.Client, error) {
+// GetClientByPhoneNumberId mocks base method.
+func (m *MockClient) GetClientByPhoneNumberId(ctx context.Context, clientId string) (*entity.Client, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetClientById", ctx, clientId)
+	ret := m.ctrl.Call(m, "GetClientByPhoneNumberId", ctx, clientId)
 	ret0, _ := ret[0].(*entity.Client)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetClientById indicates an expected call of GetClientById.
-func (mr *MockClientMockRecorder) GetClientById(ctx, clientId interface{}) *gomock.Call {
+// GetClientByPhoneNumberId indicates an expected call of GetClientByPhoneNumberId.
+func (mr *MockClientMockRecorder) GetClientByPhoneNumberId(ctx, clientId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClientById", reflect.TypeOf((*MockClient)(nil).GetClientById), ctx, clientId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClientByPhoneNumberId", reflect.TypeOf((*MockClient)(nil).GetClientByPhoneNumberId), ctx, clientId)
 }

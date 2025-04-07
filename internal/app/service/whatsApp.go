@@ -1,3 +1,5 @@
+//go:generate mockgen -source=whatsApp.go -destination=mocks/whatsApp_mock.go -package=mocks
+
 package service
 
 import (
@@ -5,11 +7,13 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/inter-hubly/linker/internal/app/cache"
 	"github.com/inter-hubly/linker/internal/app/domain/dto"
 	"github.com/inter-hubly/linker/internal/app/gateway"
 	"github.com/inter-hubly/linker/internal/app/mediator"
 	"github.com/inter-hubly/linker/internal/app/repository"
 	"github.com/inter-hubly/pilot/domain/base"
+	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/domain/valueobject"
 	"github.com/inter-hubly/pilot/hctx"
 	"github.com/inter-hubly/pilot/hlog"
@@ -26,8 +30,9 @@ type whatsAppService struct {
 	whatsappMediator   mediator.WhatsApp
 	whatsappRepository repository.WhatsApp
 	campaignRepository repository.Campaign
-	iaContext          repository.IaContext
+	flowContext        cache.FlowContext
 	chatGptGateway     gateway.Chatgpt
+	campaignCache      cache.Campaign
 }
 
 var (
@@ -41,8 +46,9 @@ func NewWhatsApp(ctx context.Context) *whatsAppService {
 			whatsappMediator:   mediator.NewWhatsApp(ctx),
 			whatsappRepository: repository.NewWhatsApp(ctx),
 			campaignRepository: repository.NewCampaign(ctx),
-			iaContext:          repository.NewIaContext(ctx),
+			flowContext:        cache.NewFlowContext(ctx),
 			chatGptGateway:     gateway.NewChatgpt(ctx),
+			campaignCache:      cache.NewCampaign(ctx),
 		}
 	})
 	return _whatsAppService
@@ -95,34 +101,87 @@ func (w *whatsAppService) ReceiveMessage(ctx context.Context, receivedDto *dto.W
 	hlog.Debug(ctx, "whatsAppService.ReceiveMessage", fmt.Sprintf("%v", receivedDto))
 
 	if err := w.whatsappMediator.ReceiveMessage(ctx, receivedDto); err != nil {
+		hlog.Error(ctx, "whatsAppService.ReceiveMessage", err.Error())
+		// return err
+	}
+
+	flowCount, err := w.flowContext.GetFlowCount(ctx, receivedDto.Sender.PhoneNumberId)
+	if err != nil {
+		hlog.Error(ctx, "whatsAppService.ReceiveMessage", err.Error())
+		return err
+	}
+	flowEntity, err := w.campaignCache.GetStepInCampaign(ctx, receivedDto.Sender.PhoneNumberId, flowCount+1)
+	if err != nil {
+		hlog.Error(ctx, "whatsAppService.ReceiveMessage", err.Error())
 		return err
 	}
 
-	iaContext, err := w.iaContext.GetContext(ctx, receivedDto.Sender.PhoneNumberId)
-	if err == nil {
-		return w.createAiResponse(ctx, receivedDto, iaContext)
+	if !flowEntity.HasIaInteraction {
+		if err = w.createFlowResponse(ctx, receivedDto, flowEntity); err != nil {
+			hlog.Error(ctx, "whatsAppService.ReceiveMessage", err.Error())
+			return err
+		}
+		if err = w.flowContext.IncrementFlowCount(ctx, receivedDto.Sender.PhoneNumberId); err != nil {
+			hlog.Error(ctx, "whatsAppService.ReceiveMessage", err.Error())
+			return err
+		}
+		return nil
 	}
 
+	flowContext, err := w.flowContext.GetContext(ctx, receivedDto.Sender.PhoneNumberId)
+	if err != nil {
+		return err
+	}
+	return w.createIaFlowResponse(ctx, receivedDto, flowContext)
+}
+
+func (w *whatsAppService) createFlowResponse(ctx context.Context,
+	receivedDto *dto.WhatsAppJSONReceived,
+	flowEntity *entity.Flow,
+) error {
+	hlog.Debug(ctx, "whatsAppService.ReceiveMessage.createFlowResponse", fmt.Sprintf("%v", receivedDto))
+
+	if err := w.SendMessage(ctx, &base.SendTextDto{
+		To:      receivedDto.Sender.PhoneNumberId,
+		Message: flowEntity.Message,
+		IsOwner: true,
+	}); err != nil {
+		hlog.Error(ctx, "whatsAppService.ReceiveMessage.createFlowResponse", err.Error())
+		return err
+	}
 	return nil
 }
 
-func (w *whatsAppService) createAiResponse(ctx context.Context, receivedDto *dto.WhatsAppJSONReceived, iaContext []dto.IaContext) error {
+func (w *whatsAppService) createIaFlowResponse(ctx context.Context,
+	receivedDto *dto.WhatsAppJSONReceived,
+	flowContext []entity.Flow,
+) error {
+	hlog.Debug(ctx, "whatsAppService.ReceiveMessage.createIaFlowResponse", fmt.Sprintf("%v", receivedDto))
 	var (
 		messageToSend string
 		err           error
 	)
 
-	iaContextMessage := &dto.IaContext{
-		Role:    "user",
-		Content: receivedDto.Metadata.Body,
+	flowContextMessage := &entity.Flow{
+		HasIaInteraction: true,
+		Message:          receivedDto.Metadata.Body,
 	}
 
-	if _, err = w.iaContext.SaveContext(ctx, receivedDto.Sender.PhoneNumberId, iaContextMessage); err != nil {
+	messageToSend, err = w.chatGptGateway.GetInformation(ctx, flowContextMessage, flowContext)
+	if err != nil {
 		return err
 	}
 
-	messageToSend, err = w.chatGptGateway.GetInformation(ctx, iaContextMessage, iaContext)
-	if err != nil {
+	// se tiver um contexto maior, é interacao de IA
+	// if iaInteraction {
+	// preciso adicionar a mensagem da IA no contexto
+
+	// } else {
+	// flowContextMessage.Message = flowContext[0].Message
+	// messageToSend = flowContext[0].Message
+	// }
+
+	if _, err = w.flowContext.SaveContext(ctx, receivedDto.Sender.PhoneNumberId, flowContextMessage); err != nil {
 		return err
 	}
 
@@ -132,9 +191,9 @@ func (w *whatsAppService) createAiResponse(ctx context.Context, receivedDto *dto
 		IsOwner: true,
 	})
 
-	if _, err = w.iaContext.SaveContext(ctx, receivedDto.Sender.PhoneNumberId, &dto.IaContext{
+	if _, err = w.flowContext.SaveContext(ctx, receivedDto.Sender.PhoneNumberId, &entity.Flow{
 		Role:    "assistant",
-		Content: messageToSend,
+		Message: messageToSend,
 	}); err != nil {
 		return err
 	}
