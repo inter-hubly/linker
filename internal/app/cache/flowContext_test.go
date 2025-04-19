@@ -6,6 +6,7 @@ import (
 	"github.com/inter-hubly/pilot/database/hredis"
 	"github.com/inter-hubly/pilot/domain/entity"
 	"github.com/inter-hubly/pilot/hctx"
+	"github.com/inter-hubly/pilot/testutils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,7 +14,11 @@ func TestIaContext(t *testing.T) {
 	ctx := hctx.Tenant.New("1234556")
 
 	if hredis.GetConnection(ctx) == nil {
-		hredis.NewConnection(ctx)
+		redis, close, err := testutils.Redis(ctx)
+		defer close(ctx)
+		assert.NoError(t, err)
+
+		hredis.NewConnection(ctx, hredis.WithAddr(redis))
 	}
 
 	iaContextTestRepository := flowContextRepository{
@@ -21,7 +26,7 @@ func TestIaContext(t *testing.T) {
 	}
 
 	t.Run("save IaContextTestRepository", func(t *testing.T) {
-		saveContext, err := iaContextTestRepository.SaveContext(ctx, "12345", &entity.Flow{Message: "test"})
+		saveContext, err := iaContextTestRepository.SaveContext(ctx, "12345", &entity.Flow{Message: "test", HasIaInteraction: true})
 		assert.Nil(t, err)
 		assert.NotNil(t, saveContext)
 	})
