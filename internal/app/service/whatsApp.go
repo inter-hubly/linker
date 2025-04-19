@@ -102,7 +102,7 @@ func (w *whatsAppService) ReceiveMessage(ctx context.Context, receivedDto *dto.W
 
 	if err := w.whatsappMediator.ReceiveMessage(ctx, receivedDto); err != nil {
 		hlog.Error(ctx, "whatsAppService.ReceiveMessage", err.Error())
-		// return err
+		return err
 	}
 
 	flowCount, err := w.flowContext.GetFlowCount(ctx, receivedDto.Sender.PhoneNumberId)
@@ -114,6 +114,11 @@ func (w *whatsAppService) ReceiveMessage(ctx context.Context, receivedDto *dto.W
 	if err != nil {
 		hlog.Error(ctx, "whatsAppService.ReceiveMessage", err.Error())
 		return err
+	}
+
+	if flowEntity == nil {
+		// terminar a interacão
+		return nil
 	}
 
 	if !flowEntity.HasIaInteraction {

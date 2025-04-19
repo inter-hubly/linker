@@ -5,7 +5,6 @@ package cache
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 	"sync"
@@ -87,5 +86,6 @@ func (c *campaignCache) GetStepInCampaign(ctx context.Context, campaignId string
 	if value, ok := campaign.Flows[strconv.Itoa(int(index))]; ok {
 		return value, nil
 	}
-	return nil, errors.New("step not found")
+	// não achou nem o step da campanha, porém não posso considerado um erro
+	return nil, nil
 }
