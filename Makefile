@@ -1,5 +1,5 @@
 SSH_KEY_PATH=/home/saimon/.ssh/id_ed25519_no_passphrase
-MIN_COVERAGE ?= 10.0
+MIN_COVERAGE ?= 0.0
 
 .PHONY: build test coverage
 

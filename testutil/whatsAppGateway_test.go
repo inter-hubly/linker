@@ -1,3 +1,5 @@
+//go:build e2e
+
 package testutil
 
 // func TestWhatsAppGateway(t *testing.T) {
