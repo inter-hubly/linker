@@ -121,7 +121,7 @@ func (w *whatsAppService) ReceiveMessage(ctx context.Context, receivedDto *dto.W
 		return nil
 	}
 
-	if !flowEntity.HasIaInteraction {
+	if !flowEntity.IsIaInteraction {
 		if err = w.createFlowResponse(ctx, receivedDto, flowEntity); err != nil {
 			hlog.Error(ctx, "whatsAppService.ReceiveMessage", err.Error())
 			return err
@@ -133,11 +133,45 @@ func (w *whatsAppService) ReceiveMessage(ctx context.Context, receivedDto *dto.W
 		return nil
 	}
 
+	if flowCount == 0 {
+		if err = w.flowContext.StartContext(ctx, receivedDto.Sender.PhoneNumberId, flowEntity); err != nil {
+			hlog.Error(ctx, "whatsAppService.ReceiveMessage", err.Error())
+			return err
+		}
+		campaignContextIa, err := w.campaignCache.GetIaContextInCampaign(ctx, receivedDto.Sender.PhoneNumberId)
+		if err != nil {
+			hlog.Error(ctx, "whatsAppService.ReceiveMessage", err.Error())
+			return err
+		}
+		if err = w.createIaFlowResponse(ctx, receivedDto, []entity.Flow{
+			{
+				IsIaInteraction: true,
+				Message:         campaignContextIa,
+				Role:            "system",
+			},
+		}); err != nil {
+			hlog.Error(ctx, "whatsAppService.ReceiveMessage", err.Error())
+			return err
+		}
+		if err = w.flowContext.IncrementFlowCount(ctx, receivedDto.Sender.PhoneNumberId); err != nil {
+			hlog.Error(ctx, "whatsAppService.ReceiveMessage", err.Error())
+			return err
+		}
+		return nil
+	}
 	flowContext, err := w.flowContext.GetContext(ctx, receivedDto.Sender.PhoneNumberId)
 	if err != nil {
 		return err
 	}
-	return w.createIaFlowResponse(ctx, receivedDto, flowContext)
+	if err = w.createIaFlowResponse(ctx, receivedDto, flowContext); err != nil {
+		hlog.Error(ctx, "whatsAppService.ReceiveMessage", err.Error())
+		return err
+	}
+	if err = w.flowContext.IncrementFlowCount(ctx, receivedDto.Sender.PhoneNumberId); err != nil {
+		hlog.Error(ctx, "whatsAppService.ReceiveMessage", err.Error())
+		return err
+	}
+	return nil
 }
 
 func (w *whatsAppService) createFlowResponse(ctx context.Context,
@@ -168,8 +202,9 @@ func (w *whatsAppService) createIaFlowResponse(ctx context.Context,
 	)
 
 	flowContextMessage := &entity.Flow{
-		HasIaInteraction: true,
-		Message:          receivedDto.Metadata.Body,
+		IsIaInteraction: true,
+		Message:         receivedDto.Metadata.Body,
+		Role:            "user",
 	}
 
 	messageToSend, err = w.chatGptGateway.GetInformation(ctx, flowContextMessage, flowContext)

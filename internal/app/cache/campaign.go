@@ -16,9 +16,10 @@ import (
 )
 
 type Campaign interface {
-	GetCampaignById(ctx context.Context, campaign string) (*entity.Campaign, error)
+	GetCampaignByPhoneId(ctx context.Context, campaign string) (*entity.Campaign, error)
 	SaveCampaign(ctx context.Context, phoneId string, campaign *entity.Campaign) error
-	GetStepInCampaign(ctx context.Context, campaignId string, index uint8) (*entity.Flow, error)
+	GetStepInCampaign(ctx context.Context, phoneId string, index uint8) (*entity.Flow, error)
+	GetIaContextInCampaign(ctx context.Context, phoneId string) (string, error)
 }
 
 type campaignCache struct {
@@ -40,7 +41,7 @@ func NewCampaign(ctx context.Context) *campaignCache {
 	return _campaignCache
 }
 
-func (c *campaignCache) GetCampaignById(ctx context.Context, phoneId string) (*entity.Campaign, error) {
+func (c *campaignCache) GetCampaignByPhoneId(ctx context.Context, phoneId string) (*entity.Campaign, error) {
 	hlog.Debug(ctx, "campaignCache.GetCampaignById", fmt.Sprintf("get campaign with phoneId: %s", phoneId))
 	tenantId := hctx.Tenant.Get(ctx)
 	key := fmt.Sprintf("%s-%s-campaign", tenantId, phoneId)
@@ -76,11 +77,11 @@ func (c *campaignCache) SaveCampaign(ctx context.Context, phoneId string, campai
 	return nil
 }
 
-func (c *campaignCache) GetStepInCampaign(ctx context.Context, campaignId string, index uint8) (*entity.Flow, error) {
-	hlog.Debug(ctx, "campaignCache.GetStepInCampaign", fmt.Sprintf("campaignId: %s with Index %d", campaignId, index))
-	campaign, err := c.GetCampaignById(ctx, campaignId)
+func (c *campaignCache) GetStepInCampaign(ctx context.Context, phoneId string, index uint8) (*entity.Flow, error) {
+	hlog.Debug(ctx, "campaignCache.GetStepInCampaign", fmt.Sprintf("campaignId for phoneId: %s with Index %d", phoneId, index))
+	campaign, err := c.GetCampaignByPhoneId(ctx, phoneId)
 	if err != nil {
-		hlog.Error(ctx, "campaignCache.GetStepInCampaign", fmt.Sprintf("campaignId: %s with Index %d", campaignId, index))
+		hlog.Error(ctx, "campaignCache.GetStepInCampaign", fmt.Sprintf("campaignId for phoneId: %s with Index %d", phoneId, index))
 		return nil, err
 	}
 	if value, ok := campaign.Flows[strconv.Itoa(int(index))]; ok {
@@ -88,4 +89,14 @@ func (c *campaignCache) GetStepInCampaign(ctx context.Context, campaignId string
 	}
 	// não achou nem o step da campanha, porém não posso considerado um erro
 	return nil, nil
+}
+
+func (c *campaignCache) GetIaContextInCampaign(ctx context.Context, phoneId string) (string, error) {
+	hlog.Debug(ctx, "campaignCache.GetIaContextInCampaign", fmt.Sprintf("phoneId: %s", phoneId))
+	campaign, err := c.GetCampaignByPhoneId(ctx, phoneId)
+	if err != nil {
+		hlog.Error(ctx, "campaignCache.GetIaContextInCampaign", fmt.Sprintf("phoneId: %s", phoneId))
+		return "", err
+	}
+	return campaign.IaContext, nil
 }

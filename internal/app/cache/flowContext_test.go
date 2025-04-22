@@ -26,7 +26,7 @@ func TestIaContext(t *testing.T) {
 	}
 
 	t.Run("save IaContextTestRepository", func(t *testing.T) {
-		saveContext, err := iaContextTestRepository.SaveContext(ctx, "12345", &entity.Flow{Message: "test", HasIaInteraction: true})
+		saveContext, err := iaContextTestRepository.SaveContext(ctx, "12345", &entity.Flow{Message: "test", IsIaInteraction: true})
 		assert.Nil(t, err)
 		assert.NotNil(t, saveContext)
 	})

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/inter-hubly/linker/internal/app/cache"
 	"github.com/inter-hubly/linker/internal/app/domain/dto"
 	"github.com/inter-hubly/linker/internal/app/domain/lentity"
 	"github.com/inter-hubly/linker/internal/app/gateway"
@@ -25,6 +26,7 @@ type whatsAppMediator struct {
 	whatsAppRepository repository.WhatsApp
 	whatsAppGateway    gateway.WhatsApp
 	pulseGateway       gateway.Pulse
+	flowContext        cache.FlowContext
 }
 
 func NewWhatsApp(ctx context.Context) WhatsApp {
@@ -40,6 +42,7 @@ func NewWhatsApp(ctx context.Context) WhatsApp {
 		whatsAppRepository: repository.NewWhatsApp(ctx),
 		whatsAppGateway:    whatsAppGateway,
 		pulseGateway:       gateway.NewPulse(),
+		flowContext:        cache.NewFlowContext(ctx),
 	}
 
 }

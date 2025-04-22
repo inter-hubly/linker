@@ -71,7 +71,7 @@ func (r *flowContextRepository) SaveContext(ctx context.Context, senderId string
 		hlog.Error(ctx, "flowContextRepository.SaveContext", fmt.Sprintf("error when marshal %v", flowContext))
 		return "", err
 	}
-	if !flowContext.HasIaInteraction {
+	if !flowContext.IsIaInteraction {
 		if err = r.connection.GetClient(ctx).LPop(ctx, key).Err(); err != nil {
 			hlog.Error(ctx, "flowContextRepository.SaveContext", fmt.Sprintf("remove flow context %s", senderId))
 			return "", err
